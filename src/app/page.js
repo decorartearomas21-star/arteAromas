@@ -1,6 +1,7 @@
 "use client";
 
 import TestimonialSection from "@/components/CarouselRow";
+import CarouselText from "@/components/CarouselText";
 import { Header } from "@/components/Header/Header";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
 import { currency } from "@/utils/currency";
@@ -9,6 +10,7 @@ import Link from "next/link";
 
 const products = [
   {
+    id: "1",
     name: "Vela Aromatica Lumière Cimento 1",
     price: 200,
     img: "/imagem1.jpg",
@@ -16,6 +18,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "2",
     name: "Vela Aromatica Lumière Cimento 2",
     price: 130,
     img: "/imagem1.jpg",
@@ -23,6 +26,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "3",
     name: "Vela Aromatica Lumière Cimento 3",
     price: 110,
     img: "/imagem1.jpg",
@@ -30,6 +34,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "4",
     name: "Vela Aromatica Lumière Cimento 4",
     price: 100,
     img: "/imagem1.jpg",
@@ -37,6 +42,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "5",
     name: "Vela Aromatica Lumière Cimento 5",
     price: 100,
     img: "/imagem1.jpg",
@@ -44,6 +50,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "6",
     name: "Vela Aromatica Lumière Cimento 6",
     price: 100,
     img: "/imagem1.jpg",
@@ -51,6 +58,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "7",
     name: "Vela Aromatica Lumière Cimento 7",
     price: 200,
     img: "/imagem1.jpg",
@@ -58,6 +66,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "8",
     name: "Vela Aromatica Lumière Cimento 8",
     price: 130,
     img: "/imagem1.jpg",
@@ -65,6 +74,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "9",
     name: "Vela Aromatica Lumière Cimento 9",
     price: 110,
     img: "/imagem1.jpg",
@@ -72,6 +82,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "10",
     name: "Vela Aromatica Lumière Cimento 10",
     price: 100,
     img: "/imagem1.jpg",
@@ -79,6 +90,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "11",
     name: "Vela Aromatica Lumière Cimento 11",
     price: 100,
     img: "/imagem1.jpg",
@@ -86,6 +98,7 @@ const products = [
     description: "Descrição do produto",
   },
   {
+    id: "12",
     name: "Vela Aromatica Lumière Cimento 12",
     price: 100,
     img: "/imagem1.jpg",
@@ -93,27 +106,6 @@ const products = [
     description: "Descrição do produto",
   },
 ];
-
-const whatsapp = (item, valorComDesconto) => {
-  let mensagem = `✨ *Olá! Tudo bem?*  
-Tenho interesse na *${item.name}*  
-
-💰 *Valor:* ${currency(item.price)}  
-
-Pode me passar mais informações? 😊`;
-
-  if (item.discont) {
-    mensagem = `✨ *Olá! Tudo bem?*  
-Tenho interesse na *${item.name}*  
-
-🔥 *Promoção de ${item.discont}% OFF!*  
-💰 De: ~~${currency(item.price)}~~  
-💸 Por: *${currency(valorComDesconto)}*  
-
-Quero aproveitar! Pode me passar mais detalhes? 😍`;
-  }
-  return `https://wa.me/5516993140835?text=${encodeURIComponent(mensagem)}`;
-};
 
 const aplicarDesconto = (valorOriginal, percentualDesconto) => {
   const valorFinal = valorOriginal * (1 - percentualDesconto / 100);
@@ -164,7 +156,7 @@ export default function Home() {
                     width={500}
                     height={500}
                     priority
-                    className="h-4 w-4 md:h-6 md:w-6 fade"
+                    className="h-4 w-4 md:h-6 md:w-6 fade rounded-sm"
                   />
                   Entregas para todo Brasil
                 </p>
@@ -175,7 +167,7 @@ export default function Home() {
                     width={500}
                     height={500}
                     priority
-                    className="h-4 w-4 md:h-6 md:w-6 fade"
+                    className="h-4 w-4 md:h-6 md:w-6 rounded-full fade"
                   />{" "}
                   Compra Segura
                 </p>
@@ -217,10 +209,14 @@ export default function Home() {
           />
         </div>
       </header>
-      <main id="novidades" className="w-full md:w-7xl fade">
+      <main id="novidades" className="w-full md:w-7xl pt-4 fade">
         <ScrollFadeIn>
-          <p className="text-3xl md:text-5xl font-medium mt-4 mb-4 px-5 md:px-10">
-            NOVIDADES
+          <CarouselText />
+        </ScrollFadeIn>
+
+        <ScrollFadeIn>
+          <p className="text-3xl md:text-4xl font-medium mt-4 mb-4 px-2 md:px-10">
+            Lançamentos
           </p>
         </ScrollFadeIn>
         <ScrollFadeIn>
@@ -232,7 +228,7 @@ export default function Home() {
                 width={500}
                 height={500}
                 priority
-                className="h-32 w-32 md:h-68 md:w-68 rounded-full object-cover object-center fade  border p-1 border-black"
+                className="h-48 w-32 md:h-68 md:w-68 rounded-sm object-cover object-center fade  border p-1 border-[var(--logo2)] "
               />
               <p className="text-1xl md:text-2xl mt-4">Produto 1</p>
             </div>
@@ -243,7 +239,7 @@ export default function Home() {
                 width={500}
                 height={500}
                 priority
-                className="h-32 w-32 md:h-68 md:w-68 rounded-full object-cover object-center fade  border p-1 border-black"
+                className="h-48 w-32 md:h-68 md:w-68 rounded-sm object-cover object-center fade  border p-1 border-[var(--logo2)] "
               />
               <p className="text-1xl md:text-2xl mt-4">Produto 2</p>
             </div>
@@ -254,7 +250,7 @@ export default function Home() {
                 width={500}
                 height={500}
                 priority
-                className="h-32 w-32 md:h-68 md:w-68 rounded-full object-cover object-center fade border p-1 border-black"
+                className="h-48 w-32 md:h-68 md:w-68 rounded-sm object-cover object-center fade border p-1 border-[var(--logo2)] "
               />
               <p className="text-1xl md:text-2xl mt-4">Produto 3</p>
             </div>
@@ -263,17 +259,20 @@ export default function Home() {
         <ScrollFadeIn>
           <p
             id="produtos"
-            className="text-3xl md:text-5xl font-medium mt-10 mb-4 px-5 md:px-10"
+            className="text-3xl md:text-4xl font-medium mt-10 mb-4 px-2 md:px-10"
           >
-            PRODUTOS
+            Galeria
           </p>
         </ScrollFadeIn>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 px-2 md:px-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 px-2 md:px-10">
           {products.map((item, i) => {
             const valorComDesconto = aplicarDesconto(item.price, item.discont);
+            const value = item.discont > 0 ? valorComDesconto : item.price;
             return (
               <ScrollFadeIn key={i}>
-                <div className="flex flex-col items-center border p-1 border-black rounded-md">
+                <div
+                  className="flex flex-col text-black border border-[var(--logo2)]/50 p-1 rounded-md shadow-md"
+                >
                   <div className="relative">
                     <Image
                       src={item.img}
@@ -281,51 +280,33 @@ export default function Home() {
                       width={500}
                       height={500}
                       priority
-                      className="h-full w-full md:h-68 md:w-68 object-cover object-center rounded-sm"
+                      className="h-full w-full object-cover object-center rounded-sm shadow-md"
                     />
                     {item.discont > 0 && (
-                      <div className="absolute bottom-0 left-0 rounded-full bg-black text-white px-2 py-1 m-2 text-sm md:text-xl">
+                      <div className="absolute shadow-md top-2 left-0 rounded-br-full rounded-tr-full bg-[var(--logo1)] text-[var(--logo2)] px-2 py-1 text-sm md:text-xl">
                         {item.discont}% OFF
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="text-1xl md:text-2xl mt-2 px-1 font-semibold">
+                    <p className="text-1xl md:text-1xl mt-2 px-1 font-semibold">
                       {item.name}
                     </p>
                   </div>
-                  <div className="flex justify-center mt-2 items-center">
-                    <p className="text-1xl md:text-2xl ">
-                      {item.discont > 0 ? (
-                        <>
-                          <span className="text-sm md:text-base line-through mr-2">
-                            {currency(item.price)}
-                          </span>
-                          <span className="font-semibold text-2xl">
-                            {currency(valorComDesconto)}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="font-semibold text-2xl">
-                          {currency(item.price)}
-                        </span>
-                      )}
+                  <span className="block w-full border-b border-black/10 my-2"></span>
+                  <div className="flex items-center gap-2">
+                    <p className="flex w-full justify-center md:text-2xl">
+                      <span className="font-semibold text-lg">
+                        {currency(value)}
+                      </span>
                     </p>
+                    <Link
+                      href={`/pdp/${item.id}`}
+                      className="flex font-semibold justify-center items-center text-1xl bg-[var(--logo2)] text-white rounded-sm w-full h-10 md:h-10"
+                    >
+                      Ver
+                    </Link>
                   </div>
-
-                  <Link
-                    href={whatsapp(item, valorComDesconto)}
-                    className="flex justify-center items-center text-1xl md:text-2xl  mt-4 bg-[var(--logo2)] text-[var(--logo1)] rounded-sm w-full h-12 md:h-16"
-                  >
-                    <Image
-                      src="/whatsapp-color-svgrepo-com.png"
-                      alt="comprar"
-                      width={40}
-                      height={40}
-                      className="h-6 w-6 object-cover mr-2"
-                    />
-                    Comprar
-                  </Link>
                 </div>
               </ScrollFadeIn>
             );
@@ -333,7 +314,7 @@ export default function Home() {
         </div>
 
         <ScrollFadeIn>
-          <p className="text-3xl md:text-5xl font-medium mt-10 mb-4 px-5 md:px-10">
+          <p className="text-3xl md:text-3xl font-medium mt-10 mb-4 px-2 md:px-10">
             Comentarios
           </p>
         </ScrollFadeIn>

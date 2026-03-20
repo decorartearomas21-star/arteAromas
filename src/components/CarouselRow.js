@@ -6,7 +6,7 @@ import AutoScroll from "embla-carousel-auto-scroll";
 import Image from "next/image";
 
 export default function TestimonialSection() {
-  const comments = ["João", "Maria", "Pedro", "Ana", "Lucas"];
+  const comments = ["João", "Maria", "Pedro", "Ana", "Lucas","João", "Maria", "Pedro", "Ana", "Lucas"];
 
   // 1. Carrossel Superior: Movimento contínuo para a esquerda
   const [emblaRef1] = useEmblaCarousel({ 
@@ -34,7 +34,7 @@ export default function TestimonialSection() {
   const Card = ({ name }) => (
     <div 
       dir="ltr"
-      className="flex-[0_0_auto] min-w-[280px] md:min-w-[300px] mx-3 flex items-center border border-[var(--logo2)] rounded-full p-3 bg-white select-none shadow-sm"
+      className="flex-[0_0_auto] min-w-[280px] md:min-w-[300px] mx-3 flex items-center border border-[var(--logo2)] rounded-full p-3 bg-white/60 select-none shadow-sm"
     >
       <Image
         src="/aaa.webp"

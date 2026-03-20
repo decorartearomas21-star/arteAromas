@@ -42,24 +42,24 @@ const LiGroup = ({ isOpen, setIsOpen, isChange }) => (
       <ul className="bg-[var(--background)] border border-gray-100 rounded-lg shadow-xl overflow-hidden">
         <li>
           <Link
-            href="/Velas"
-            className="block px-4 py-3 text-sm text-gray-700  hover:text-[var(--logo2)]"
+            href="#Velas"
+            className="block px-4 py-3 text-sm text-[var(--logo2)]  hover:text-black"
           >
             Velas
           </Link>
         </li>
         <li>
           <Link
-            href="/Sabonetes"
-            className="block px-4 py-3 text-sm text-gray-700  hover:text-[var(--logo2)]"
+            href="#Sabonetes"
+            className="block px-4 py-3 text-sm text-[var(--logo2)]  hover:text-black"
           >
             Sabonetes
           </Link>
         </li>
         <li>
           <Link
-            href="/Incenso"
-            className="block px-4 py-3 text-sm text-gray-700 hover:text-[var(--logo2)]"
+            href="#Incenso"
+            className="block px-4 py-3 text-sm text-[var(--logo2)]  hover:text-black"
           >
             Incenso
           </Link>

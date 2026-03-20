@@ -1,0 +1,167 @@
+"use client";
+
+import { Header } from "@/components/Header/Header";
+import ScrollFadeIn from "@/components/ScrollFadeIn";
+import { currency } from "@/utils/currency";
+import Image from "next/image";
+import Link from "next/link";
+
+const whatsapp = (item, valorComDesconto) => {
+  let mensagem = `✨ *Olá! Tudo bem?*  
+Tenho interesse na *${item.name}*  
+
+💰 *Valor:* ${currency(item.price)}  
+
+Pode me passar mais informações? 😊`;
+
+  if (item.discont) {
+    mensagem = `✨ *Olá! Tudo bem?*  
+Tenho interesse na *${item.name}*  
+
+🔥 *Promoção de ${item.discont}% OFF!*  
+💰 De: ~~${currency(item.price)}~~  
+💸 Por: *${currency(valorComDesconto)}*  
+
+Quero aproveitar! Pode me passar mais detalhes? 😍`;
+  }
+  return `https://wa.me/5516993140835?text=${encodeURIComponent(mensagem)}`;
+};
+
+const aplicarDesconto = (valorOriginal, percentualDesconto) => {
+  const valorFinal = valorOriginal * (1 - percentualDesconto / 100);
+  return valorFinal;
+};
+
+export default function PagePdp({ item = {} }) {
+  const valorComDesconto = aplicarDesconto(item.price, item.discont);
+  const value = item.discont > 0 ? valorComDesconto : item.price;
+  return (
+    <div className="flex flex-col items-center">
+      <header className="flex flex-1 w-full items-center justify-center">
+        <Header />
+        <div
+          id="banner"
+          className="w-full md:w-[800px] relative flex flex-col items-center"
+        >
+          {item.img && (
+            <Image
+              src={item.img}
+              alt="banner"
+              width={1000}
+              height={20}
+              priority
+              className="w-full md:w-[800px] object-cover object-center fade"
+            />
+          )}
+          {item.discont > 0 && (
+            <div className="absolute bottom-0 left-0 rounded-full bg-black text-white px-2 py-1 md:p-4 m-2 text-sm md:text-3xl">
+              {item.discont}% OFF
+            </div>
+          )}
+        </div>
+      </header>
+      <main id="novidades" className="w-full md:w-[800px] text-black fade px-2">
+        <p className="text-1xl md:text-2xl font-medium mt-4 mb-2 text-shadow-md ">
+          {item.name}
+        </p>
+        <div className="flex w-full gap-2 md:w-[600px] text-black justify-between p-2">
+          <p className="flex w-full items-center gap-2 text-sm md:text-1xl  text-shadow-md">
+            <Image
+              src="/shipping-fast-solid-svgrepo-com.png"
+              alt="banner"
+              width={500}
+              height={500}
+              priority
+              className="h-4 w-4 md:h-6 md:w-6 fade invert"
+            />
+            Entregas para todo Brasil
+          </p>
+          <p className="flex w-full items-center gap-2 text-sm md:text-1xl text-shadow-md">
+            <Image
+              src="/security-verified-svgrepo-com.png"
+              alt="banner"
+              width={500}
+              height={500}
+              priority
+              className="h-4 w-4 md:h-6 md:w-6 rounded-full fade invert"
+            />
+            Compra Segura
+          </p>
+        </div>
+        <div className="flex w-full gap-2 md:w-[600px]  text-black justify-between p-2">
+          <p className="flex w-full items-center gap-2 text-sm md:text-1xl  text-shadow-md">
+            <Image
+              src="/art-design-paint-pallet-format-text-svgrepo-com.png"
+              alt="banner"
+              width={500}
+              height={500}
+              priority
+              className="h-4 w-4 md:h-6 md:w-6 fade invert"
+            />
+            Produto Artesanal
+          </p>
+          <p className="flex w-full items-center gap-2 text-sm md:text-1xl  text-shadow-md">
+            <Image
+              src="/present-svgrepo-com.png"
+              alt="banner"
+              width={500}
+              height={500}
+              priority
+              className="h-4 w-4 md:h-6 md:w-6 fade invert"
+            />
+            Ideal para presente
+          </p>
+        </div>
+
+        <div className="flex flex-col mt-6 p-2  rounded-md bg-white/50">
+          <span className="text-sm md:text-base text-gray-500 line-through">
+            {currency(item.price)}
+          </span>
+          <p className=" flex justify-between  text-4xl">
+            <span className="font-semibold mr-4 md:text-6xl">
+              {currency(value)}
+            </span>
+            {item.discont > 0 && (
+              <span className="flex font-semibold mt-1 text-white justify-center  items-center text-sm md:text-base p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-sm h-6 md:h-10 ">
+                🔥 Economia {currency(item.price - value)}
+              </span>
+            )}
+          </p>
+          <p></p>
+          <p>ou em 2x de {currency(value / 2)}</p>
+        </div>
+        <div className="flex items-center gap-2 mx-2 mt-1">
+          ⭐⭐⭐⭐⭐ <p className="text-sm">4,9</p>
+        </div>
+        <Link
+          href={whatsapp(item, value)}
+          className="flex font-semibold justify-center items-center text-1xl md:text-2xl  mt-4 bg-[var(--logo2)] text-white rounded-sm w-full h-12 md:h-16"
+        >
+          <Image
+            src="/whatsapp.png"
+            alt="comprar"
+            width={40}
+            height={40}
+            className="h-8 w-8 object-cover mr-2 invert "
+          />
+          Pedir agora
+        </Link>
+        <ScrollFadeIn>
+          <p className="text-1xl md:text-1xl font-medium mt-10 md:px-10">
+            Comentarios
+          </p>
+          <p className="text-sm">"Cheiro maravilhoso, deixou minha casa super aconchegante!"</p>
+        </ScrollFadeIn>
+
+        <ScrollFadeIn>
+          <div className="flex w-full text-sm justify-between gap-4 p-2 mt-4">
+            <p className="">Privacidade e segurança</p>
+            <p className="">Termos de uso</p>
+            <p className="">Regulamentos</p>
+            <p className="">Trabalhe conosco</p>
+          </div>
+        </ScrollFadeIn>
+      </main>
+    </div>
+  );
+}
