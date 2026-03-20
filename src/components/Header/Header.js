@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const LiGroup = ({ isOpen, setIsOpen }) => (
+const LiGroup = ({ isOpen, setIsOpen, isChange }) => (
   <li
     className="relative group"
     onMouseEnter={() => setIsOpen(true)}
@@ -12,7 +12,7 @@ const LiGroup = ({ isOpen, setIsOpen }) => (
   >
     {/* Gatilho: No desktop é Hover, no Mobile pode ser Clique */}
     <button
-      className="flex items-center gap-1 text-gray-600 group-hover:text-blue-600 transition-colors py-2"
+      className={`${isChange ? "text-[var(--logo2)]" : "text-white"} flex items-center gap-1 hover:text-[var(--logo1)] transition-colors py-2`}
       onClick={() => setIsOpen(!isOpen)}
     >
       Produtos
@@ -36,31 +36,32 @@ const LiGroup = ({ isOpen, setIsOpen }) => (
         absolute left-[-10px] w-48 pt-2
         ${isOpen ? "block" : "hidden"} 
         md:group-hover:block
+        shadow-md
       `}
     >
       <ul className="bg-[var(--background)] border border-gray-100 rounded-lg shadow-xl overflow-hidden">
         <li>
           <Link
-            href="/eletronicos"
-            className="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+            href="/Velas"
+            className="block px-4 py-3 text-sm text-gray-700  hover:text-[var(--logo2)]"
           >
-            Eletrônicos
+            Velas
           </Link>
         </li>
         <li>
           <Link
-            href="/roupas"
-            className="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+            href="/Sabonetes"
+            className="block px-4 py-3 text-sm text-gray-700  hover:text-[var(--logo2)]"
           >
-            Roupas
+            Sabonetes
           </Link>
         </li>
         <li>
           <Link
-            href="/acessorios"
-            className="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+            href="/Incenso"
+            className="block px-4 py-3 text-sm text-gray-700 hover:text-[var(--logo2)]"
           >
-            Acessórios
+            Incenso
           </Link>
         </li>
       </ul>
@@ -71,49 +72,68 @@ const LiGroup = ({ isOpen, setIsOpen }) => (
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const [isChange, setIsChange] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if(window.scrollY > 602){
+        setIsChange(true)
+      } else {
+        setIsChange(false)
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
-    <header className="shadow-sm sticky top-0 z-50 w-full bg-[var(--background)]">
-      <nav className="container mx-auto flex items-center justify-center w-full">
-        <ul className="flex items-center space-x-6">
+    <div className={`fixed top-0 left-0 z-50 w-full text-xs md:text-base absolute ${isChange ? "bg-[var(--background)] shadow-md" : "bg-gradient-to-b from-black/70 to-black/0"} transition-all`}>
+      <nav className="container mx-auto flex items-center justify-center w-full ">
+        <ul className="flex items-center space-x-6 fade">
           <li>
             <Link
               href="/"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className={`${isChange ? "text-[var(--logo2)]" : "text-white"} hover:text-[var(--logo1)] transition-all fadeDown`}
             >
               Inicio
             </Link>
           </li>
-          <LiGroup isOpen={isOpen} setIsOpen={setIsOpen} />
+          <LiGroup isOpen={isOpen} isChange={isChange} setIsOpen={setIsOpen} />
           <li>
             <Link href="/">
               <Image
                 src="/logo.jpg"
                 alt="logo"
-                width={50}
+                width={40}
                 height={20}
                 priority
-                className="w-full md:h-auto object-cover"
+                className="w-full md:h-auto object-cover rounded-sm my-2"
               />
             </Link>
           </li>
           <li>
+            
             <Link
-              href="/contato"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              href="https://www.instagram.com/decor.artearomas"
+              className={`${isChange ? "text-[var(--logo2)]" : "text-white"} hover:text-[var(--logo1)] transition-all`}
             >
-              instagram
+              Instagram
             </Link>
           </li>
           <li>
             <Link
               href="/contato"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
+              className={`${isChange ? "text-[var(--logo2)]" : "text-white"} hover:text-[var(--logo1)] transition-all`}
             >
               Contato
             </Link>
           </li>
         </ul>
       </nav>
-    </header>
+    </div>
   );
 };
