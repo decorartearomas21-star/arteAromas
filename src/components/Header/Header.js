@@ -75,6 +75,8 @@ export const Header = ({disable = false}) => {
   const [isChange, setIsChange] = useState(disable);
 
   useEffect(() => {
+    if(disable) return;
+    
     const handleScroll = () => {
       if(window.scrollY > 602){
         setIsChange(true)
