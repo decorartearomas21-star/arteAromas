@@ -1,141 +1,81 @@
 "use client";
 
-import { Header } from "@/components/Header/Header";
-import ScrollFadeIn from "@/components/ScrollFadeIn";
-import Image from "next/image";
 import { useState } from "react";
+import Banner from "@/components/Banner";
+import CommentsComponent from "@/components/CommentsComponent";
+import { Header } from "@/components/Header/Header";
+import Texts from "@/components/Texts";
 
 export default function PainelPage() {
-  const [title, setTitle] = useState("");
-  const [subTitle, setSubTitle] = useState("");
-  const [phraseOne, setPhraseOne] = useState("");
-  const [phraseTwo, setPhraseTwo] = useState("");
-  const [phraseThree, setPhraseThree] = useState("");
-  const [phraseFor, setPhraseFor] = useState("");
-  const [phraseFive, setPhraseFive] = useState("");
-  const [phraseSix, setPhraseSix] = useState("");
+  const [activeTab, setActiveTab] = useState("banner");
+
+  const tabs = [
+    { id: "banner", label: "Banner", icon: "🖼️" },
+    { id: "textos", label: "Textos", icon: "📝" },
+    { id: "comentarios", label: "Comentários", icon: "💬" },
+    { id: "produtos", label: "Produtos", icon: "📦" },
+  ];
 
   return (
-    <div className="flex flex-col items-center">
-      <header className="flex flex-1 w-full items-center justify-center">
+    <div className="flex flex-col pt-20 items-center min-h-screen bg-gray-50">
+      <header className="flex w-full items-center justify-center bg-white shadow-sm">
         <Header disable />
       </header>
-      <main
-        id="novidades"
-        className="w-full lg:w-[800px] text-black fade pt-20 px-2"
-      >
-        <div className="pb-6">
-          <div className="font-bold">GESTÃO DO BANNER PRINCIPAL</div>
-          <div className="border border-[var(--logo2)] rounded-sm flex flex-col pb-2 gap-2">
-            <div>
-              <Image
-                src="/banner.jpg"
-                alt="banner"
-                width={1000}
-                height={20}
-                priority
-                className="w-full lg:w-[800px] object-cover object-center fade"
-              />
-            </div>
-            <div className="px-2">
-              <label className="font-bold">Titulo banner</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Titulo"
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200   outline-none transition-all text-gray-800 placeholder:text-gray-400"
-              />
-              <label className="font-bold">Subtitulo banner</label>
-              <input
-                type="text"
-                value={subTitle}
-                onChange={(e) => setSubTitle(e.target.value)}
-                placeholder="SubTitulo"
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200   outline-none transition-all text-gray-800 placeholder:text-gray-400"
-              />
-            </div>
-          </div>
+
+      {/* Barra de Navegação Horizontal */}
+      <nav className="w-full sticky top-0 z-20 bg-white border-b border-gray-200">
+        <div className="max-w-[800px] mx-auto flex overflow-x-auto no-scrollbar py-4 px-4 space-x-3 scroll-smooth">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                flex items-center gap-2 px-6 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 font-medium text-sm
+                ${
+                  activeTab === tab.id
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-200 scale-105"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }
+              `}
+            >
+              <span>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <div>
-          <div className="font-bold">TEXTOS ROTATIVOS (5 FRASES)</div>
-          <div className="border border-[var(--logo2)] rounded-sm flex flex-col py-2 gap-2">
-            <div className="flex w-full flex-col lg:flex-row">
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 1</label>
-                <input
-                  type="text"
-                  value={phraseOne}
-                  onChange={(e) => setPhraseOne(e.target.value)}
-                  placeholder="Frase 1"
-                  className="w-full  px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 2</label>
-                <input
-                  type="text"
-                  value={phraseTwo}
-                  onChange={(e) => setPhraseTwo(e.target.value)}
-                  placeholder="Frase 2"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
+      </nav>
+
+      <main className="w-full lg:w-[800px] text-black pt-8 px-4 pb-20">
+        {/* Renderização Condicional baseada na Tab Ativa */}
+        
+        {activeTab === "banner" && (
+          <section className="fade-in">
+            <Banner />
+          </section>
+        )}
+
+        {activeTab === "textos" && (
+          <section className="fade-in">
+            <Texts />
+          </section>
+        )}
+
+        {activeTab === "comentarios" && (
+          <section className="fade-in">
+            <div className="font-bold mb-4 uppercase tracking-wide text-gray-600 text-sm">
+              Gestão de Comentários
             </div>
-            <div className="flex w-full flex-col lg:flex-row">
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 3</label>
-                <input
-                  type="text"
-                  value={phraseThree}
-                  onChange={(e) => setPhraseThree(e.target.value)}
-                  placeholder="Frase 3"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 4</label>
-                <input
-                  type="text"
-                  value={phraseFor}
-                  onChange={(e) => setPhraseFor(e.target.value)}
-                  placeholder="Frase 4"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
+            <div className="border border-gray-200 rounded-xl bg-white p-2 shadow-sm">
+              <CommentsComponent />
             </div>
-            <div className="flex w-full flex-col lg:flex-row">
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 5</label>
-                <input
-                  type="text"
-                  value={phraseFive}
-                  onChange={(e) => setPhraseFive(e.target.value)}
-                  placeholder="Frase 5"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
-              <div className="px-2 w-full">
-                <label className="font-bold">Frase 6</label>
-                <input
-                  type="text"
-                  value={phraseSix}
-                  onChange={(e) => setPhraseSix(e.target.value)}
-                  placeholder="Frase 6"
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 placeholder:text-gray-400"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <ScrollFadeIn>
-          <p className="text-1xl lg:text-1xl font-medium mt-10 lg:px-10">
-            Comentarios
-          </p>
-          <p className="text-sm">
-            "Cheiro maravilhoso, deixou minha casa super aconchegante!"
-          </p>
-        </ScrollFadeIn>
+          </section>
+        )}
+
+        {activeTab === "produtos" && (
+          <section className="fade-in p-10 text-center border-2 border-dashed border-gray-300 rounded-2xl">
+            <p className="text-gray-500 font-medium">📦 Módulo de Produtos em desenvolvimento...</p>
+          </section>
+        )}
       </main>
     </div>
   );
