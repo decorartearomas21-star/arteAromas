@@ -7,6 +7,10 @@ import { saveBanner } from "@/app/actions/banner";
 const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
+  const [primaryButtonText, setPrimaryButtonText] = useState("Compre Agora");
+  const [primaryButtonLink, setPrimaryButtonLink] = useState("#novidades");
+  const [secondaryButtonText, setSecondaryButtonText] = useState("Ver Coleções");
+  const [secondaryButtonLink, setSecondaryButtonLink] = useState("link");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("/banner.jpg");
   const [saving, setSaving] = useState(false);
@@ -31,6 +35,10 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
     if (initialData) {
       setTitle(initialData.title || "");
       setSubTitle(initialData.subTitle || "");
+      setPrimaryButtonText(initialData.primaryButtonText || "Compre Agora");
+      setPrimaryButtonLink(initialData.primaryButtonLink || "#lançamentos");
+      setSecondaryButtonText(initialData.secondaryButtonText || "Ver Coleções");
+      setSecondaryButtonLink(initialData.secondaryButtonLink || "/home");
       setImagePreview(initialData.imageUrl || "/banner.jpg");
     }
   }, [initialData]);
@@ -39,18 +47,27 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
     return (
       title !== (initialData?.title || "") ||
       subTitle !== (initialData?.subTitle || "") ||
+      primaryButtonText !== (initialData?.primaryButtonText || "Compre Agora") ||
+      primaryButtonLink !== (initialData?.primaryButtonLink || "#lançamentos") ||
+      secondaryButtonText !== (initialData?.secondaryButtonText || "Ver Coleções") ||
+      secondaryButtonLink !== (initialData?.secondaryButtonLink || "/home") ||
       imageFile !== null
     );
-  }, [title, subTitle, imageFile, initialData]);
+  }, [title, subTitle, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, imageFile, initialData]);
 
   const handleSave = async () => {
     setSaving(true);
     const formData = new FormData();
     formData.append('title', title);
     formData.append('subTitle', subTitle);
+    formData.append('primaryButtonText', primaryButtonText);
+    formData.append('primaryButtonLink', primaryButtonLink);
+    formData.append('secondaryButtonText', secondaryButtonText);
+    formData.append('secondaryButtonLink', secondaryButtonLink);
     if (imageFile) formData.append('imageFile', imageFile);
+    formData.append('oldImageUrl', initialData?.imageUrl || '');
 
-    const result = await saveBanner(formData, initialData?.imageUrl);
+    const result = await saveBanner(formData);
     
     if (result.success) {
       onSaveSuccess(result.data);
@@ -116,6 +133,58 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
               placeholder="SubTítulo"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="font-bold mb-4 text-gray-700">Botões do Banner</h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="font-bold block mb-1 text-sm">Texto do Botão Primário</label>
+                <input
+                  type="text"
+                  value={primaryButtonText}
+                  onChange={(e) => setPrimaryButtonText(e.target.value)}
+                  placeholder="Ex: Compre Agora"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="font-bold block mb-1 text-sm">Link do Botão Primário</label>
+                <input
+                  type="text"
+                  value={primaryButtonLink}
+                  onChange={(e) => setPrimaryButtonLink(e.target.value)}
+                  placeholder="Ex: #novidades ou /produtos"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label className="font-bold block mb-1 text-sm">Texto do Botão Secundário</label>
+                <input
+                  type="text"
+                  value={secondaryButtonText}
+                  onChange={(e) => setSecondaryButtonText(e.target.value)}
+                  placeholder="Ex: Ver Coleções"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="font-bold block mb-1 text-sm">Link do Botão Secundário</label>
+                <input
+                  type="text"
+                  value={secondaryButtonLink}
+                  onChange={(e) => setSecondaryButtonLink(e.target.value)}
+                  placeholder="Ex: #novidades ou /produtos"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+            </div>
           </div>
 
           <button

@@ -3,36 +3,41 @@
 import { getBannerData } from '@/app/actions/banner';
 import { getTextsData } from '@/app/actions/texts';
 import { getProductsData } from '@/app/actions/products';
-import { getCommentsData } from '@/app/actions/comments';
 import { normalizeProducts } from '@/utils/product';
 
 function normalizeTexts(textsData) {
+  if (Array.isArray(textsData)) {
+    return textsData.map((item) => String(item || '').trim()).filter(Boolean);
+  }
+
   if (!textsData || typeof textsData !== 'object') return [];
 
-  return ['phrase1', 'phrase2', 'phrase3', 'phrase4', 'phrase5', 'phrase6']
-    .map((key) => (textsData[key] || '').trim())
+  return Object.keys(textsData)
+    .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .map((key) => String(textsData[key] || '').trim())
     .filter(Boolean);
 }
 
-function normalizeComments(commentsData) {
-  if (!Array.isArray(commentsData)) return [];
+function getFeaturedComments(products) {
+  if (!Array.isArray(products)) return [];
 
-  return commentsData.filter(
-    (comment) => comment && (comment.name || comment.phrase || comment.image),
+  return products.flatMap((product) =>
+    (product.comments || []).filter(
+      (comment) => comment.showOnHome && (comment.name || comment.phrase || comment.image),
+    ),
   );
 }
 
 export async function getHomeData() {
   try {
-    const [banner, textsRaw, productsRaw, commentsRaw] = await Promise.all([
+    const [banner, textsRaw, productsRaw] = await Promise.all([
       getBannerData(),
       getTextsData(),
       getProductsData(),
-      getCommentsData(),
     ]);
 
     const products = normalizeProducts(productsRaw);
-    const comments = normalizeComments(commentsRaw);
+    const comments = getFeaturedComments(products);
 
     return {
       banner: banner || null,

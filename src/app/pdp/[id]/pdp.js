@@ -10,6 +10,11 @@ import { normalizeProduct } from "@/utils/product";
 import Image from "next/image";
 import Link from "next/link";
 
+const getCommentInitial = (name) => {
+  const trimmedName = String(name || "").trim();
+  return (trimmedName.charAt(0) || "C").toUpperCase();
+};
+
 const whatsapp = (item, valorComDesconto) => {
   let mensagem = `✨ *Olá! Tudo bem?*  
 Tenho interesse na *${item.name}*  
@@ -124,7 +129,7 @@ export default function PagePdp({ productId }) {
           )}
         </div>
       </header>
-      <main id="novidades" className="w-full lg:w-[800px] text-black fade px-2">
+      <main id="lançamentos" className="w-full lg:w-[800px] text-black fade px-2">
         <p className="text-1xl lg:text-2xl font-medium mt-4 mb-2 text-shadow-md ">
           {item.name}
         </p>
@@ -194,9 +199,7 @@ export default function PagePdp({ productId }) {
           <p></p>
           <p>ou em 2x de {currency(value / 2)}</p>
         </div>
-        <div className="flex items-center gap-2 mx-2 mt-1">
-          ⭐⭐⭐⭐⭐ <p className="text-sm">4,9</p>
-        </div>
+
         <Link
           href={whatsapp(item, value)}
           className="flex font-semibold justify-center items-center text-1xl lg:text-2xl  mt-4 bg-[var(--logo2)] text-white rounded-sm w-full h-12 lg:h-16"
@@ -214,7 +217,37 @@ export default function PagePdp({ productId }) {
           <p className="text-1xl lg:text-1xl font-medium mt-10 lg:px-10">
             Comentarios
           </p>
-          <p className="text-sm">"Cheiro maravilhoso, deixou minha casa super aconchegante!"</p>
+          {item.comments.length === 0 && (
+            <p className="mt-2 text-sm text-gray-600">
+              Este produto ainda não possui comentarios cadastrados.
+            </p>
+          )}
+          <div className="mt-4 space-y-3 lg:px-10">
+            {item.comments.map((comment) => (
+              <div
+                key={comment.id}
+                className="flex items-start gap-3 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm"
+              >
+                {comment.image ? (
+                  <Image
+                    src={comment.image}
+                    alt={comment.name || "Cliente"}
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--logo2) text-lg font-bold text-white">
+                    {getCommentInitial(comment.name)}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold">{comment.name || "Cliente"}</p>
+                  <p className="text-sm text-gray-700">{comment.phrase}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </ScrollFadeIn>
 
         <ScrollFadeIn>

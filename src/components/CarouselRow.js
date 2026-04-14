@@ -14,6 +14,11 @@ const defaultComments = [
   },
 ];
 
+const getCommentInitial = (name) => {
+  const trimmedName = String(name || "").trim();
+  return (trimmedName.charAt(0) || "C").toUpperCase();
+};
+
 export default function TestimonialSection({ comments = [] }) {
   const baseComments =
     Array.isArray(comments) && comments.length > 0 ? comments : defaultComments;
@@ -47,13 +52,19 @@ export default function TestimonialSection({ comments = [] }) {
       dir="ltr"
       className="flex-[0_0_auto] min-w-[280px] md:min-w-[300px] mx-3 flex items-center border border-[var(--logo2)] rounded-full p-3 bg-white/60 select-none shadow-sm"
     >
-      <Image
-        src={image || "/aaa.webp"}
-        alt={name}
-        width={40}
-        height={40}
-        className="h-10 w-10 object-cover rounded-full mr-4 pointer-events-none"
-      />
+      {image ? (
+        <Image
+          src={image}
+          alt={name}
+          width={40}
+          height={40}
+          className="h-10 w-10 object-cover rounded-full mr-4 pointer-events-none"
+        />
+      ) : (
+        <div className="mr-4 flex h-10 w-10 items-center justify-center rounded-full bg-(--logo2) text-sm font-bold text-white pointer-events-none">
+          {getCommentInitial(name)}
+        </div>
+      )}
       <div className="flex flex-col">
         <span className="text-sm font-bold text-gray-800 leading-tight">{name}</span>
         <span className="text-xs md:text-sm text-gray-500 leading-tight">

@@ -2,16 +2,42 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { uploadCommentImage } from "@/app/actions/comments";
 import { saveProductsList, uploadProductImage } from "@/app/actions/products";
 import { currency } from "@/utils/currency";
+import {
+  createEmptyProductComment,
+  hasProductCommentContent,
+  prepareProductsForEditor,
+  prepareProductsForStorage,
+} from "@/utils/product";
+
+const getCommentInitial = (name) => {
+  const trimmedName = String(name || "").trim();
+  return (trimmedName.charAt(0) || "C").toUpperCase();
+};
+
+const ensureTrailingComment = (comments) => {
+  const safeComments = Array.isArray(comments) ? [...comments] : [];
+
+  if (
+    safeComments.length === 0 ||
+    hasProductCommentContent(safeComments[safeComments.length - 1])
+  ) {
+    safeComments.push(createEmptyProductComment());
+  }
+
+  return safeComments;
+};
 
 const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [products, setProducts] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState(null); // Controla qual card está aberto
+  const [editingId, setEditingId] = useState(null);
+  const [editingTab, setEditingTab] = useState("product");
 
   useEffect(() => {
-    if (initialData) setProducts(initialData);
+    if (initialData) setProducts(prepareProductsForEditor(initialData));
   }, [initialData]);
 
   const handleChange = (index, field, value) => {
@@ -45,10 +71,17 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
         rating: 10,
         interactions: 0,
         isActive: true,
+        comments: [createEmptyProductComment()],
         id: newId,
       },
     ]);
     setEditingId(newId);
+    setEditingTab("product");
+  };
+
+  const openEditor = (productId) => {
+    setEditingId(productId);
+    setEditingTab("product");
   };
 
   const removeProduct = (index) => {
@@ -59,12 +92,68 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
 
   const handleSaveAll = async () => {
     setSaving(true);
-    const result = await saveProductsList(products);
+    const payload = prepareProductsForStorage(products);
+    const result = await saveProductsList(payload);
     if (result.success) {
+      const productsForEditor = prepareProductsForEditor(result.data);
+      setProducts(productsForEditor);
       onSaveSuccess(result.data);
       setEditingId(null);
     }
     setSaving(false);
+  };
+
+  const handleCommentChange = (productIndex, commentIndex, field, value) => {
+    setProducts((currentProducts) => {
+      const newProducts = [...currentProducts];
+      const comments = ensureTrailingComment(newProducts[productIndex].comments);
+      comments[commentIndex] = {
+        ...comments[commentIndex],
+        [field]: value,
+      };
+      newProducts[productIndex] = {
+        ...newProducts[productIndex],
+        comments: ensureTrailingComment(comments),
+      };
+      return newProducts;
+    });
+  };
+
+  const handleCommentImageUpload = async (productIndex, commentIndex, file) => {
+    if (!file) return;
+
+    const currentComment = products[productIndex]?.comments?.[commentIndex];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("oldUrl", currentComment?.image || "");
+
+    const response = await uploadCommentImage(formData);
+    if (response.success) {
+      handleCommentChange(productIndex, commentIndex, "image", response.url);
+      return;
+    }
+
+    alert("Erro no upload: " + response.error);
+  };
+
+  const removeComment = (productIndex, commentIndex) => {
+    const selectedComment = products[productIndex]?.comments?.[commentIndex];
+    if (!selectedComment) return;
+
+    if (!confirm("Deseja remover este comentário?")) return;
+
+    setProducts((currentProducts) => {
+      const newProducts = [...currentProducts];
+      const currentComments = newProducts[productIndex].comments || [];
+      const filteredComments = currentComments.filter((_, index) => index !== commentIndex);
+
+      newProducts[productIndex] = {
+        ...newProducts[productIndex],
+        comments: ensureTrailingComment(filteredComments),
+      };
+
+      return newProducts;
+    });
   };
 
   const renderStars = (rating) => {
@@ -92,6 +181,10 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
       <div className="space-y-6">
         {products.map((product, index) => {
           const isEditing = editingId === product.id;
+          const totalComments = (product.comments || []).filter(hasProductCommentContent).length;
+          const featuredComments = (product.comments || []).filter(
+            (comment) => hasProductCommentContent(comment) && comment.showOnHome,
+          ).length;
 
           if (!isEditing) {
             return (
@@ -111,11 +204,14 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                   <div className="truncate">
                     <h3 className="font-bold text-gray-800 text-sm truncate">{product.name || "Produto sem nome"}</h3>
                     <p className="text-blue-600 font-black text-xs">{currency(product.price)}</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">
+                      {totalComments} comentarios, {featuredComments} na home
+                    </p>
                   </div>
                 </div>
                 
                 <button 
-                  onClick={() => setEditingId(product.id)}
+                  onClick={() => openEditor(product.id)}
                   className="ml-4 px-5 py-2.5 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-95"
                 >
                   Editar
@@ -164,7 +260,31 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                 </div>
               </div>
 
-              <div className="flex flex-col lg:flex-row gap-8">
+              <div className="mb-6 flex rounded-2xl bg-gray-100 p-1">
+                <button
+                  onClick={() => setEditingTab("product")}
+                  className={`flex-1 rounded-xl px-4 py-2 text-[11px] font-black uppercase transition-all ${
+                    editingTab === "product"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500"
+                  }`}
+                >
+                  Produto
+                </button>
+                <button
+                  onClick={() => setEditingTab("comments")}
+                  className={`flex-1 rounded-xl px-4 py-2 text-[11px] font-black uppercase transition-all ${
+                    editingTab === "comments"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500"
+                  }`}
+                >
+                  Comentarios ({totalComments})
+                </button>
+              </div>
+
+              {editingTab === "product" && (
+                <div className="flex flex-col lg:flex-row gap-8">
                 {/* Coluna de Mídia */}
                 <div className="w-full lg:w-56 space-y-3">
                   <div className="relative aspect-square w-full rounded-2xl overflow-hidden border-2 border-gray-50 bg-gray-50">
@@ -244,7 +364,114 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                     </div>
                   </div>
                 </div>
-              </div>
+                </div>
+              )}
+
+              {editingTab === "comments" && (
+                <div className="space-y-4">
+                  {(product.comments || []).map((comment, commentIndex) => {
+                    const isEmptyComment = !hasProductCommentContent(comment);
+
+                    return (
+                      <div
+                        key={comment.id}
+                        className="rounded-3xl border border-gray-100 bg-gray-50/70 p-5 shadow-sm"
+                      >
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                          <p className="text-[11px] font-black uppercase tracking-wide text-gray-400">
+                            Comentario #{commentIndex + 1}
+                          </p>
+
+                          {!isEmptyComment && (
+                            <button
+                              onClick={() => removeComment(index, commentIndex)}
+                              className="p-2 text-red-500 transition-colors hover:text-red-600"
+                              title="Excluir comentário"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-6 lg:flex-row">
+                          <div className="w-full lg:w-56 space-y-3">
+                            <label className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-inner transition-all hover:bg-gray-50">
+                              {comment.image ? (
+                                <Image
+                                  src={comment.image}
+                                  alt={comment.name || "Cliente"}
+                                  width={56}
+                                  height={56}
+                                  className="h-14 w-14 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-(--logo2) text-lg font-bold text-white">
+                                  {getCommentInitial(comment.name)}
+                                </div>
+                              )}
+                              <span className="text-xs font-semibold text-gray-500">
+                                Clique na foto para alterar
+                              </span>
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) =>
+                                  handleCommentImageUpload(index, commentIndex, e.target.files[0])
+                                }
+                              />
+                            </label>
+                          </div>
+
+                          <div className="flex-1 space-y-4">
+                            <div>
+                              <input
+                                type="text"
+                                value={comment.name}
+                                onChange={(e) =>
+                                  handleCommentChange(index, commentIndex, "name", e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-white px-4 py-3.5 text-sm font-semibold shadow-inner outline-none focus:ring-2 focus:ring-blue-400"
+                                placeholder="Ex: Maria"
+                              />
+                            </div>
+
+                            <div>
+                              <textarea
+                                value={comment.phrase}
+                                onChange={(e) =>
+                                  handleCommentChange(index, commentIndex, "phrase", e.target.value)
+                                }
+                                className="w-full rounded-2xl bg-white px-4 py-3.5 text-sm shadow-inner outline-none focus:ring-2 focus:ring-blue-400"
+                                placeholder="O que o cliente falou sobre esse produto?"
+                                rows="3"
+                              />
+                            </div>
+
+                            <label className="flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-3">
+                              <p className="text-[10px] font-black uppercase text-gray-400">
+                                Exibir na home
+                              </p>
+                              <input
+                                type="checkbox"
+                                checked={comment.showOnHome}
+                                onChange={(e) =>
+                                  handleCommentChange(index, commentIndex, "showOnHome", e.target.checked)
+                                }
+                                className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}

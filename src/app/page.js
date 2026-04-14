@@ -24,6 +24,10 @@ export default async function Home() {
   const bannerTitle = homeData.banner?.title?.trim() || "Transforme sua casa em um refúgio acolhedor";
   const bannerSubTitle = homeData.banner?.subTitle?.trim() || "Velas artesanais com aromas únicos";
   const bannerImage = homeData.banner?.imageUrl || "/banner.jpg";
+  const primaryButtonText = homeData.banner?.primaryButtonText || "Compre Agora";
+  const primaryButtonLink = homeData.banner?.primaryButtonLink || "#lançamentos";
+  const secondaryButtonText = homeData.banner?.secondaryButtonText || "Ver Coleções";
+  const secondaryButtonLink = homeData.banner?.secondaryButtonLink || "/home";
 
   return (
     <div className="flex flex-col items-center">
@@ -42,16 +46,16 @@ export default async function Home() {
 
               <div className="flex gap-4 mt-6">
                 <Link
-                  href="#novidades"
+                  href={primaryButtonLink}
                   className="bg-[var(--logo1)] rounded-sm text-[var(--logo2)] py-2 px-4"
                 >
-                  Compre Agora
+                  {primaryButtonText}
                 </Link>
                 <Link
-                  href="produtos"
+                  href={secondaryButtonLink}
                   className="border-2 border-[var(--logo1)] rounded-sm text-[var(--logo1)] py-2 px-4 "
                 >
-                  Ver Coleçãos
+                  {secondaryButtonText}
                 </Link>
               </div>
 
@@ -116,7 +120,7 @@ export default async function Home() {
           />
         </div>
       </header>
-      <main id="novidades" className="w-full lg:w-7xl pt-4 fade">
+      <main id="lançamentos" className="w-full lg:w-7xl pt-4 fade">
         <ScrollFadeIn>
           <CarouselText phrases={homeData.texts} />
         </ScrollFadeIn>
@@ -188,7 +192,7 @@ export default async function Home() {
         </ScrollFadeIn>
         <ScrollFadeIn>
           <p
-            id="produtos"
+            id="galeria"
             className="text-3xl lg:text-4xl font-medium mt-10 mb-4 px-2 lg:px-10"
           >
             Galeria
@@ -254,15 +258,19 @@ export default async function Home() {
           )}
         </div>
 
-        <ScrollFadeIn>
-          <p className="text-3xl lg:text-3xl font-medium mt-10 mb-4 px-2 lg:px-10">
-            Comentarios
-          </p>
-        </ScrollFadeIn>
+        {homeData.comments.length > 0 && (
+          <>
+            <ScrollFadeIn>
+              <p className="text-3xl lg:text-3xl font-medium mt-10 mb-4 px-2 lg:px-10">
+                Comentarios
+              </p>
+            </ScrollFadeIn>
 
-        <ScrollFadeIn>
-          <TestimonialSection comments={homeData.comments} />
-        </ScrollFadeIn>
+            <ScrollFadeIn>
+              <TestimonialSection comments={homeData.comments} />
+            </ScrollFadeIn>
+          </>
+        )}
         <ScrollFadeIn>
           <div className="flex w-full text-sm justify-between gap-4 p-2 mt-4">
             <p className="">Privacidade e segurança</p>

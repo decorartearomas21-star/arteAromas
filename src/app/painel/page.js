@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import Banner from "@/components/Banner";
 import Texts from "@/components/Texts";
-import CommentsComponent from "@/components/CommentsComponent";
 import ProductsComponent from "@/components/ProductsComponent";
 import { Header } from "@/components/Header/Header";
 
 import { getBannerData } from "@/app/actions/banner";
 import { getTextsData } from "@/app/actions/texts";
-import { getCommentsData } from "@/app/actions/comments";
 import { getProductsData } from "@/app/actions/products";
 
 
@@ -19,7 +17,6 @@ export default function PainelPage() {
 
   // --- Estados Globais do Painel ---
   const [bannerData, setBannerData] = useState(null);
-  const [commentsData, setCommentsData] = useState([]);
   const [productsData, setProductsData] = useState([]);
   const [textsData, setTextsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,14 +26,12 @@ export default function PainelPage() {
     async function loadAllData() {
       setLoading(true);
       try {
-        const [banner, texts, comments, prodcuts] = await Promise.all([
+        const [banner, texts, prodcuts] = await Promise.all([
           getBannerData(),
           getTextsData(),
-          getCommentsData(),
           getProductsData()
         ]);
 
-        if (comments) setCommentsData(comments);
         if (prodcuts) setProductsData(prodcuts);
         if (banner) setBannerData(banner);
         if (texts) setTextsData(texts);
@@ -53,9 +48,8 @@ export default function PainelPage() {
 
   const tabs = [
     { id: "banner", label: "Banner", icon: "🖼️" },
-    { id: "textos", label: "Textos", icon: "📝" },
-    { id: "comentarios", label: "Comentários", icon: "💬" },
     { id: "produtos", label: "Produtos", icon: "📦" },
+    { id: "textos", label: "Textos", icon: "📝" },
   ];
 
   return (
@@ -108,21 +102,6 @@ export default function PainelPage() {
               isLoading={loading}
               onSaveSuccess={(newData) => setTextsData(newData)}
             />
-          </section>
-        )}
-
-        {activeTab === "comentarios" && (
-          <section className="fade-in">
-            <div className="font-bold mb-4 uppercase tracking-wide text-gray-600 text-sm">
-              Gestão de Comentários
-            </div>
-            <div className="border border-gray-200 rounded-xl bg-white p-2 shadow-sm">
-              <CommentsComponent
-                initialData={commentsData}
-                isLoading={loading}
-                onSaveSuccess={(newData) => setCommentsData(newData)}
-              />
-            </div>
           </section>
         )}
 

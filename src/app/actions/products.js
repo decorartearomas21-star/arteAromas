@@ -2,7 +2,7 @@
 
 import { put, list, del } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
-import { normalizeProduct } from '@/utils/product';
+import { normalizeProduct, prepareProductsForStorage } from '@/utils/product';
 
 const PRODUCTS_JSON_PATH = 'config/products.json';
 
@@ -24,7 +24,9 @@ export async function getProductsData() {
 // Salva a lista completa de produtos
 export async function saveProductsList(productsArray) {
   try {
-    await put(PRODUCTS_JSON_PATH, JSON.stringify(productsArray), {
+    const sanitizedProducts = prepareProductsForStorage(productsArray);
+
+    await put(PRODUCTS_JSON_PATH, JSON.stringify(sanitizedProducts), {
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
@@ -32,7 +34,7 @@ export async function saveProductsList(productsArray) {
     });
 
     revalidatePath('/'); 
-    return { success: true, data: productsArray };
+    return { success: true, data: sanitizedProducts };
   } catch (error) {
     return { success: false, error: error.message };
   }

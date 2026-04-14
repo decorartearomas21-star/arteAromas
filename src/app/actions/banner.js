@@ -24,6 +24,12 @@ export async function saveBanner(formData) {
   const subTitle = formData.get('subTitle');
   const imageFile = formData.get('imageFile');
   const oldImageUrl = formData.get('oldImageUrl'); // Certifique-se de ter um <input name="oldImageUrl" type="hidden" value={data.imageUrl} />
+  
+  // Novos campos de botões
+  const primaryButtonText = formData.get('primaryButtonText') || 'Compre Agora';
+  const primaryButtonLink = formData.get('primaryButtonLink') || '#lançamentos';
+  const secondaryButtonText = formData.get('secondaryButtonText') || 'Ver Coleções';
+  const secondaryButtonLink = formData.get('secondaryButtonLink') || '/home';
 
   let finalImageUrl = oldImageUrl || '';
   let imageWasUpdated = false;
@@ -40,7 +46,15 @@ export async function saveBanner(formData) {
     }
 
     // 2. Atualização do JSON
-    const updatedData = { title, subTitle, imageUrl: finalImageUrl };
+    const updatedData = {
+      title,
+      subTitle,
+      imageUrl: finalImageUrl,
+      primaryButtonText,
+      primaryButtonLink,
+      secondaryButtonText,
+      secondaryButtonLink,
+    };
 
     await put(BANNER_JSON_PATH, JSON.stringify(updatedData), {
       access: 'public',
