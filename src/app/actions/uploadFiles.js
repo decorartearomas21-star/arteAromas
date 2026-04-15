@@ -1,16 +1,11 @@
 'use server';
-import { put } from '@vercel/blob';
 
 export async function uploadImage(formData) {
-  const imageFile = formData.get('image')
+  const imageUrl = String(formData.get('imageUrl') || '').trim();
 
-  if (!imageFile) {
-    throw new Error('Nenhuma imagem enviada');
+  if (!imageUrl) {
+    throw new Error('Nenhuma URL de imagem informada');
   }
 
-  const blob = await put(imageFile.name, imageFile, {
-    access: 'public',
-  });
-
-  return blob.url;
+  return imageUrl;
 }

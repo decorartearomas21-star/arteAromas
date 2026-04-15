@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { saveCommentsList, uploadCommentImage } from "@/app/actions/comments";
+import { saveCommentsList } from "@/app/actions/comments";
 
 const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [comments, setComments] = useState([]);
@@ -18,21 +18,6 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     const newComments = [...comments];
     newComments[index][field] = value;
     setComments(newComments);
-  };
-
-  const handleFileUpload = async (index, file) => {
-    if (!file) return;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('oldUrl', comments[index].image);
-
-    const res = await uploadCommentImage(formData);
-    if (res.success) {
-      handleChange(index, "image", res.url);
-    } else {
-      alert("Erro no upload: " + res.error);
-    }
   };
 
   const addNewComment = () => {
@@ -97,13 +82,14 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                     <div className="flex items-center justify-center h-full text-gray-300 text-xs">Sem foto</div>
                   )}
                 </div>
-                <label className="cursor-pointer text-[10px] font-bold text-blue-600 hover:underline">
-                  TROCAR FOTO
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="image/*" 
-                    onChange={(e) => handleFileUpload(index, e.target.files[0])} 
+                <label className="block w-full">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase">URL da foto</span>
+                  <input
+                    type="url"
+                    value={item.image || ""}
+                    onChange={(e) => handleChange(index, "image", e.target.value)}
+                    className="mt-1 w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition-all text-xs"
+                    placeholder="https://..."
                   />
                 </label>
               </div>

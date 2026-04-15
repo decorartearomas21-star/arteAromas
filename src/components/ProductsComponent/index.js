@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { uploadCommentImage } from "@/app/actions/comments";
-import { saveProductsList, uploadProductImage } from "@/app/actions/products";
+import { saveProductsList } from "@/app/actions/products";
 import { currency } from "@/utils/currency";
 import {
   createEmptyProductComment,
@@ -66,18 +65,6 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     const newProducts = [...products];
     newProducts[index][field] = value;
     setProducts(newProducts);
-  };
-
-  const handleFileUpload = async (index, file) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("oldUrl", products[index].image);
-
-    const res = await uploadProductImage(formData);
-    if (res.success) {
-      handleChange(index, "image", res.url);
-    }
   };
 
   const addNewProduct = () => {
@@ -144,22 +131,6 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     });
   };
 
-  const handleCommentImageUpload = async (productIndex, commentIndex, file) => {
-    if (!file) return;
-
-    const currentComment = products[productIndex]?.comments?.[commentIndex];
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("oldUrl", currentComment?.image || "");
-
-    const response = await uploadCommentImage(formData);
-    if (response.success) {
-      handleCommentChange(productIndex, commentIndex, "image", response.url);
-      return;
-    }
-
-    alert("Erro no upload: " + response.error);
-  };
 
   const removeComment = (productIndex, commentIndex) => {
     const selectedComment = products[productIndex]?.comments?.[commentIndex];
@@ -319,10 +290,16 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                       <div className="flex items-center justify-center h-full text-[10px] text-gray-300 font-bold">SEM FOTO</div>
                     )}
                   </div>
-                  <label className="flex items-center justify-center w-full py-3 bg-gray-100 rounded-xl text-[10px] font-black text-gray-500 cursor-pointer hover:bg-gray-200 transition-all uppercase">
-                    SUBIR NOVA IMAGEM
-                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(index, e.target.files[0])} />
-                  </label>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-400 uppercase ml-1">URL da imagem</label>
+                    <input
+                      type="url"
+                      value={product.image || ""}
+                      onChange={(e) => handleChange(index, "image", e.target.value)}
+                      className="w-full px-4 py-3 mt-1 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-400 text-sm font-semibold shadow-inner"
+                      placeholder="https://..."
+                    />
+                  </div>
                 </div>
 
                 {/* Coluna de Dados */}
@@ -494,7 +471,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
 
                         <div className="flex flex-col gap-6 lg:flex-row">
                           <div className="w-full lg:w-56 space-y-3">
-                            <label className="flex cursor-pointer items-center gap-4 rounded-2xl bg-white p-4 shadow-inner transition-all hover:bg-gray-50">
+                            <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-inner">
                               {comment.image ? (
                                 <Image
                                   src={comment.image}
@@ -508,18 +485,20 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                                   {getCommentInitial(comment.name)}
                                 </div>
                               )}
-                              <span className="text-xs font-semibold text-gray-500">
-                                Clique na foto para alterar
-                              </span>
+                              <span className="text-xs font-semibold text-gray-500">Avatar por URL</span>
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-black text-gray-400 uppercase ml-1">URL da foto</label>
                               <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
+                                type="url"
+                                value={comment.image || ""}
                                 onChange={(e) =>
-                                  handleCommentImageUpload(index, commentIndex, e.target.files[0])
+                                  handleCommentChange(index, commentIndex, "image", e.target.value)
                                 }
+                                className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold shadow-inner outline-none focus:ring-2 focus:ring-blue-400"
+                                placeholder="https://..."
                               />
-                            </label>
+                            </div>
                           </div>
 
                           <div className="flex-1 space-y-4">

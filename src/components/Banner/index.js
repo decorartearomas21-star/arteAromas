@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from "react"; // Adicionado useRef
-import Image from "next/image"; // Adicionado import do Image
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { saveBanner } from "@/app/actions/banner";
 
 const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
@@ -11,25 +11,9 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
   const [primaryButtonLink, setPrimaryButtonLink] = useState("#novidades");
   const [secondaryButtonText, setSecondaryButtonText] = useState("Ver Coleções");
   const [secondaryButtonLink, setSecondaryButtonLink] = useState("link");
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("/banner.jpg");
+  const [imageUrl, setImageUrl] = useState("/banner.jpg");
   const [saving, setSaving] = useState(false);
-
-  // --- DEFINIÇÕES QUE FALTAVAM ---
-  const fileInputRef = useRef(null);
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-  // -------------------------------
+  const isIbbShareLink = /^https?:\/\/(www\.)?ibb\.co\//i.test(String(imageUrl || ""));
 
   useEffect(() => {
     if (initialData) {
@@ -39,7 +23,7 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
       setPrimaryButtonLink(initialData.primaryButtonLink || "#lançamentos");
       setSecondaryButtonText(initialData.secondaryButtonText || "Ver Coleções");
       setSecondaryButtonLink(initialData.secondaryButtonLink || "/home");
-      setImagePreview(initialData.imageUrl || "/banner.jpg");
+      setImageUrl(initialData.imageUrl || "/banner.jpg");
     }
   }, [initialData]);
 
@@ -51,9 +35,9 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
       primaryButtonLink !== (initialData?.primaryButtonLink || "#lançamentos") ||
       secondaryButtonText !== (initialData?.secondaryButtonText || "Ver Coleções") ||
       secondaryButtonLink !== (initialData?.secondaryButtonLink || "/home") ||
-      imageFile !== null
+      imageUrl !== (initialData?.imageUrl || "/banner.jpg")
     );
-  }, [title, subTitle, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, imageFile, initialData]);
+  }, [title, subTitle, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, imageUrl, initialData]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -64,14 +48,12 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
     formData.append('primaryButtonLink', primaryButtonLink);
     formData.append('secondaryButtonText', secondaryButtonText);
     formData.append('secondaryButtonLink', secondaryButtonLink);
-    if (imageFile) formData.append('imageFile', imageFile);
-    formData.append('oldImageUrl', initialData?.imageUrl || '');
+    formData.append('imageUrl', imageUrl || '');
 
     const result = await saveBanner(formData);
     
     if (result.success) {
       onSaveSuccess(result.data);
-      setImageFile(null);
       alert("Banner atualizado!");
     }
     setSaving(false);
@@ -84,35 +66,34 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
       <div className="font-bold mb-2">GESTÃO DO BANNER PRINCIPAL</div>
       
       <div className="border border-(--logo2) rounded-sm flex flex-col pb-4 gap-4">
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          onChange={handleFileChange} 
-          accept="image/*"
-          className="hidden" 
-        />
-
-        <div 
-          className="relative group cursor-pointer overflow-hidden" 
-          onClick={handleImageClick}
-          title="Clique para trocar a imagem"
-        >
+        <div className="relative group overflow-hidden">
           <Image
-            src={imagePreview}
+            src={imageUrl || "/banner.jpg"}
             alt="banner"
             width={1000}
             height={400}
             priority
             className="w-full lg:w-200 h-75 object-cover object-center fade transition-opacity group-hover:opacity-80"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="bg-white/90 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-              Trocar Imagem
-            </span>
-          </div>
         </div>
 
         <div className="px-4 space-y-4">
+          <div>
+            <label className="font-bold block mb-1">URL da imagem do banner</label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://..."
+              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500"
+            />
+            {isIbbShareLink && (
+              <p className="mt-2 text-xs text-amber-700">
+                Esse link parece ser da pagina do iBB. Use a URL direta da imagem (ex: https://i.ibb.co/...).
+              </p>
+            )}
+          </div>
+
           <div>
             <label className="font-bold block mb-1">Título banner</label>
             <input

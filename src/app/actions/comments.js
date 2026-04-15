@@ -1,6 +1,6 @@
 'use server';
 
-import { put, list, del } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 
 const COMMENTS_JSON_PATH = 'config/comments.json';
@@ -37,27 +37,3 @@ export async function saveCommentsList(commentsArray) {
   }
 }
 
-// Action para upload de imagem de perfil do comentário
-export async function uploadCommentImage(formData) {
-  try {
-    const file = formData.get('file');
-    const oldUrl = formData.get('oldUrl');
-
-    if (!file) throw new Error("Arquivo não encontrado");
-
-    // 1. Deleta a imagem antiga se existir
-    if (oldUrl && oldUrl.includes('vercel-storage.com')) {
-      await del(oldUrl);
-    }
-
-    // 2. Sobe a nova imagem
-    const blob = await put(`comments/${file.name}`, file, {
-      access: 'public',
-      addRandomSuffix: true,
-    });
-
-    return { success: true, url: blob.url };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}

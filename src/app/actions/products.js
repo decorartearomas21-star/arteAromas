@@ -1,6 +1,6 @@
 'use server';
 
-import { put, list, del } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
 import { normalizeProduct, prepareProductsForStorage } from '@/utils/product';
 
@@ -35,31 +35,6 @@ export async function saveProductsList(productsArray) {
 
     revalidatePath('/'); 
     return { success: true, data: sanitizedProducts };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-// Action para upload de imagem do produto (com limpeza da antiga)
-export async function uploadProductImage(formData) {
-  try {
-    const file = formData.get('file');
-    const oldUrl = formData.get('oldUrl');
-
-    if (!file) throw new Error("Arquivo não encontrado");
-
-    // 1. Deleta a imagem antiga se existir para não encher o storage
-    if (oldUrl && oldUrl.includes('vercel-storage.com')) {
-      await del(oldUrl);
-    }
-
-    // 2. Sobe a nova imagem com sufixo aleatório (evita cache)
-    const blob = await put(`products/${file.name}`, file, {
-      access: 'public',
-      addRandomSuffix: true,
-    });
-
-    return { success: true, url: blob.url };
   } catch (error) {
     return { success: false, error: error.message };
   }
