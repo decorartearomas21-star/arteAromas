@@ -65,6 +65,7 @@ export default function ProductCard({ product, className = "" }) {
   return (
     <Link
       href={`/pdp/${product.id}`}
+      prefetch
       className={`flex flex-col rounded-2xl text-[var(--logo2)] p-1 mb-12 transition-all`}
     >
       <div className="relative h-80 overflow-hidden rounded-xl lg:h-80">

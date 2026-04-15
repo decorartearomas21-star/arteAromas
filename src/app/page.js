@@ -196,10 +196,18 @@ export default async function Home({ searchParams }) {
         )}
         <ScrollFadeIn>
           <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-white/60 bg-white/70 p-4 text-xs font-medium uppercase tracking-wide text-(--logo2)/60 lg:text-sm">
-            <p className="">Privacidade e seguranca</p>
-            <p className="">Termos de uso</p>
-            <p className="">Regulamentos</p>
-            <p className="">Trabalhe conosco</p>
+            <Link href="/privacidade-e-seguranca" className="transition-colors hover:text-[var(--logo2)]">
+              Privacidade e seguranca
+            </Link>
+            <Link href="/termos-de-uso" className="transition-colors hover:text-[var(--logo2)]">
+              Termos de uso
+            </Link>
+            <Link href="/regulamentos" className="transition-colors hover:text-[var(--logo2)]">
+              Regulamentos
+            </Link>
+            <Link href="/trabalhe-conosco" className="transition-colors hover:text-[var(--logo2)]">
+              Trabalhe conosco
+            </Link>
           </div>
         </ScrollFadeIn>
       </main>

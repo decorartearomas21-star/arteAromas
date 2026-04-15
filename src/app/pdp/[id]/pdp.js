@@ -296,12 +296,20 @@ export default function PagePdp({ productId }) {
         </ScrollFadeIn>
 
         <ScrollFadeIn>
-          <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pb-4 text-xs font-medium uppercase tracking-wide text-(--logo2)/60 lg:text-sm">
-            <p>Privacidade e seguranca</p>
-            <p>Termos de uso</p>
-            <p>Regulamentos</p>
-            <p>Trabalhe conosco</p>
-          </footer>
+          <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-white/60 bg-white/70 p-4 text-xs font-medium uppercase tracking-wide text-(--logo2)/60 lg:text-sm">
+            <Link href="/privacidade-e-seguranca" className="transition-colors hover:text-[var(--logo2)]">
+              Privacidade e seguranca
+            </Link>
+            <Link href="/termos-de-uso" className="transition-colors hover:text-[var(--logo2)]">
+              Termos de uso
+            </Link>
+            <Link href="/regulamentos" className="transition-colors hover:text-[var(--logo2)]">
+              Regulamentos
+            </Link>
+            <Link href="/trabalhe-conosco" className="transition-colors hover:text-[var(--logo2)]">
+              Trabalhe conosco
+            </Link>
+          </div>
         </ScrollFadeIn>
       </main>
     </div>
