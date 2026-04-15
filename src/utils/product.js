@@ -99,7 +99,9 @@ export const normalizeProduct = (product) => {
     description: product.description || "",
     price: Number(product.price || 0),
     image: product.image || product.img || "/imagem1.jpg",
-    discountPercent: getDiscountPercent(product.discount ?? product.discont),
+    discountPercent: getDiscountPercent(
+      product.discountPercent ?? product.discount ?? product.discont,
+    ),
     rating: Number(product.rating || 0),
     isActive: product.isActive !== false,
     comments: sanitizeProductComments(product.comments),

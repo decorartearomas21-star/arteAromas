@@ -16,12 +16,15 @@ const toCategoryAnchor = (category) =>
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-");
 
-const LiGroup = ({ isOpen, setIsOpen, isChange, categories }) => (
-  <li
-    className="relative group"
-    onMouseEnter={() => setIsOpen(true)}
-    onMouseLeave={() => setIsOpen(false)}
-  >
+const LiGroup = ({ isOpen, setIsOpen, isChange, categories }) => {
+  const closeMenu = () => setIsOpen(false);
+
+  return (
+    <li
+      className="relative group"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
     {/* Gatilho: No desktop é Hover, no Mobile pode ser Clique */}
     <button
       className={`${isChange ? "text-[var(--logo2)]" : "text-white"} flex items-center gap-1 ${isChange ? "hover:text-[var(--logo2)]" : "hover:text-[var(--logo1)]"} transition-colors py-2`}
@@ -64,18 +67,26 @@ const LiGroup = ({ isOpen, setIsOpen, isChange, categories }) => (
             <Link
               href={`/?categoria=${toCategoryAnchor(category)}#galeria`}
               className="block px-4 py-3 text-sm text-[var(--logo2)] hover:text-black"
+              onClick={closeMenu}
             >
               {category}
             </Link>
           </li>
         ))}
-        
+        <Link
+          href={`/#galeria`}
+          className="block px-4 py-3 text-sm text-[var(--logo2)] hover:text-black"
+          onClick={closeMenu}
+        >
+          Todos os produtos
+        </Link>
       </ul>
     </div>
-  </li>
-);
+    </li>
+  );
+};
 
-export const Header = ({disable = false}) => {
+export const Header = ({ disable = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { products, isHydrated, setProducts } = useProducts();
 
@@ -112,10 +123,10 @@ export const Header = ({disable = false}) => {
   }, [isHydrated, products.length, setProducts]);
 
   useEffect(() => {
-    if(disable) return;
-    
+    if (disable) return;
+
     const handleScroll = () => {
-      if(window.scrollY > 602){
+      if (window.scrollY > 600) {
         setIsChange(true)
       } else {
         setIsChange(false)
@@ -160,7 +171,7 @@ export const Header = ({disable = false}) => {
             </Link>
           </li>
           <li>
-            
+
             <Link
               href="https://www.instagram.com/decor.artearomas"
               className={`${isChange ? "text-[var(--logo2)]" : "text-white"} hover:text-[var(--logo1)] transition-all`}

@@ -128,7 +128,7 @@ export default function PagePdp({ productId }) {
 
   if (!item) {
     return (
-      <div className="flex min-h-screen flex-col items-center">
+      <div className="flex min-h-screen flex-col items-center bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_60%)]">
         <Header />
         <main className="w-full max-w-3xl px-4 pt-32 text-center text-black">
           <p className="text-2xl font-semibold">
@@ -141,7 +141,7 @@ export default function PagePdp({ productId }) {
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex items-center rounded-sm bg-[var(--logo2)] px-6 py-3 font-semibold text-white"
+            className="mt-6 inline-flex items-center rounded-sm bg-(--logo2) px-6 py-3 font-semibold text-white"
           >
             Voltar para Home
           </Link>
@@ -151,167 +151,157 @@ export default function PagePdp({ productId }) {
   }
 
   const valorComDesconto = aplicarDesconto(item.price, item.discountPercent);
-  const value = item.discountPercent > 0 ? valorComDesconto : item.price;
+  const hasDiscount = item.discountPercent > 0;
+  const value = hasDiscount ? valorComDesconto : item.price;
+  const savings = item.price - value;
+
   return (
-    <div className="flex flex-col items-center">
-      <header className="flex flex-1 w-full items-center justify-center">
-        <Header />
-        <div
-          id="banner"
-          className="w-full lg:w-[800px] relative flex flex-col items-center"
-        >
-          {item.image && (
-            <Image
-              src={item.image}
-              alt="banner"
-              width={1000}
-              height={20}
-              priority
-              className="w-full lg:w-[800px] object-cover object-center fade"
-            />
-          )}
-          {item.discountPercent > 0 && (
-            <div className="absolute bottom-0 left-0 rounded-full bg-black text-white px-2 py-1 lg:p-4 m-2 text-sm lg:text-3xl">
-              {item.discountPercent}% OFF
+    <div className="relative isolate flex min-h-screen flex-col items-center overflow-hidden bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_58%)] pb-16">
+      <Header />
+      <div className="pointer-events-none absolute -left-16 top-36 z-0 h-52 w-52 rounded-full bg-amber-200/40 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 top-52 z-0 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
+
+      <main id="lancamentos" className="relative z-10 w-full max-w-6xl px-4 pt-28 lg:px-8 lg:pt-32">
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
+          <div className="rounded-3xl border border-white/60 bg-white/70 p-3 shadow-xl backdrop-blur-sm lg:p-4">
+            <div className="relative overflow-hidden rounded-2xl bg-[#efe4d2]">
+              {item.image && (
+                <Image
+                  src={item.image}
+                  alt={item.name || "Produto"}
+                  width={1280}
+                  height={900}
+                  priority
+                  className="h-85 w-full object-cover object-center lg:h-130"
+                />
+              )}
+              {hasDiscount && (
+                <div className="absolute left-4 top-4 rounded-full bg-black/80 px-3 py-1 text-sm font-bold tracking-wide text-white lg:text-base">
+                  {item.discountPercent}% OFF
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </header>
-      <main id="lançamentos" className="w-full lg:w-[800px] text-black fade px-2">
-        <p className="text-3xl lg:text-4xl font-medium mt-4 mb-2 text-shadow-md ">
-          {item.name}
-        </p>
-        {item.description && (
-          <div className="mt-2 rounded-md py-3 lg:p-4">
-            <p className="text-base lg:text-base leading-6 text-black/90">
-              {renderWhatsAppText(item.description)}
-            </p>
           </div>
-        )}
-        <div className="flex w-full gap-2 lg:w-[600px] text-black justify-between p-2">
-          <p className="flex w-full items-center gap-2 text-sm lg:text-1xl  text-shadow-md">
-            <Image
-              src="/shipping-fast-solid-svgrepo-com.png"
-              alt="banner"
-              width={500}
-              height={500}
-              priority
-              className="h-4 w-4 lg:h-6 lg:w-6 fade invert"
-            />
-            Entregas para todo Brasil
-          </p>
-          <p className="flex w-full items-center gap-2 text-sm lg:text-1xl text-shadow-md">
-            <Image
-              src="/security-verified-svgrepo-com.png"
-              alt="banner"
-              width={500}
-              height={500}
-              priority
-              className="h-4 w-4 lg:h-6 lg:w-6 rounded-full fade invert"
-            />
-            Compra Segura
-          </p>
-        </div>
-        <div className="flex w-full gap-2 lg:w-[600px]  text-black justify-between p-2">
-          <p className="flex w-full items-center gap-2 text-sm lg:text-1xl  text-shadow-md">
-            <Image
-              src="/art-design-paint-pallet-format-text-svgrepo-com.png"
-              alt="banner"
-              width={500}
-              height={500}
-              priority
-              className="h-4 w-4 lg:h-6 lg:w-6 fade invert"
-            />
-            Produto Artesanal
-          </p>
-          <p className="flex w-full items-center gap-2 text-sm lg:text-1xl  text-shadow-md">
-            <Image
-              src="/present-svgrepo-com.png"
-              alt="banner"
-              width={500}
-              height={500}
-              priority
-              className="h-4 w-4 lg:h-6 lg:w-6 fade invert"
-            />
-            Ideal para presente
-          </p>
-        </div>
 
-        <div className="flex flex-col mt-6 p-2  rounded-md bg-white/50">
-          <span className="text-sm lg:text-base text-gray-500 line-through">
-            {currency(item.price)}
-          </span>
-          <p className=" flex justify-between  text-4xl">
-            <span className="font-semibold mr-4 lg:text-6xl">
-              {currency(value)}
-            </span>
-            {item.discountPercent > 0 && (
-              <span className="flex font-semibold mt-1 text-white justify-center  items-center text-sm lg:text-base p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-sm h-6 lg:h-10 ">
-                🔥 Economia {currency(item.price - value)}
-              </span>
-            )}
-          </p>
-          <p></p>
-          <p>ou em 2x de {currency(value / 2)}</p>
-        </div>
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-2xl backdrop-blur-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-(--logo2)/60">
+                Essencia artesanal
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold leading-tight text-(--logo2) lg:text-4xl">
+                {item.name}
+              </h1>
 
-        <Link
-          href={whatsapp(item, value)}
-          className="flex font-semibold justify-center items-center text-1xl lg:text-2xl  mt-4 bg-[var(--logo2)] text-white rounded-sm w-full h-12 lg:h-16"
-        >
-          <Image
-            src="/whatsapp.png"
-            alt="comprar"
-            width={40}
-            height={40}
-            className="h-8 w-8 object-cover mr-2 invert "
-          />
-          Pedir agora
-        </Link>
-        <ScrollFadeIn>
-          <p className="text-1xl lg:text-1xl font-medium mt-10 lg:px-10">
-            Comentários
-          </p>
-          {item.comments.length === 0 && (
-            <p className="mt-2 text-sm text-gray-600">
-              Este produto ainda não possui comentarios cadastrados.
-            </p>
-          )}
-          <div className="mt-4 space-y-3 lg:px-10">
-            {item.comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="flex items-start gap-3 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm"
-              >
-                {comment.image ? (
-                  <Image
-                    src={comment.image}
-                    alt={comment.name || "Cliente"}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--logo2) text-lg font-bold text-white">
-                    {getCommentInitial(comment.name)}
+              <div className="mt-5 space-y-3 rounded-2xl bg-[#f7efe2] p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-(--logo2)/60">
+                  Valor final
+                </p>
+                <p className="text-4xl font-black tracking-tight text-(--logo2) lg:text-5xl">
+                  {currency(value)}
+                </p>
+                {hasDiscount && (
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="text-(--logo2)/60 line-through">{currency(item.price)}</span>
+                    <span className="rounded-full bg-linear-to-r from-red-500 to-orange-400 px-3 py-1 font-semibold text-white">
+                      Economia {currency(savings)}
+                    </span>
                   </div>
                 )}
-                <div>
-                  <p className="font-semibold">{comment.name || "Cliente"}</p>
-                  <p className="text-sm text-gray-700">{comment.phrase}</p>
+                <p className="text-sm text-(--logo2)/70">ou em 2x de {currency(value / 2)} sem juros</p>
+              </div>
+
+              <Link
+                href={whatsapp(item, value)}
+                className="mt-5 flex h-13 w-full items-center justify-center rounded-2xl bg-(--logo2) text-lg font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <Image
+                  src="/whatsapp.png"
+                  alt="comprar"
+                  width={36}
+                  height={36}
+                  className="mr-2 h-7 w-7 object-cover invert"
+                />
+                Pedir agora
+              </Link>
+
+              <div className="mt-5 grid grid-cols-2 gap-2 text-xs font-semibold text-(--logo2)/80">
+                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
+                  Entrega nacional
+                </div>
+                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
+                  Compra segura
+                </div>
+                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
+                  Produto artesanal
+                </div>
+                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
+                  Presenteavel
                 </div>
               </div>
-            ))}
+            </div>
           </div>
+        </section>
+
+        {item.description && (
+          <section className="mt-8 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-xl backdrop-blur-sm lg:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--logo2)/60">
+              Sobre o produto
+            </p>
+            <p className="mt-3 text-base leading-7 text-(--logo2)/90 lg:text-lg">
+              {renderWhatsAppText(item.description)}
+            </p>
+          </section>
+        )}
+
+        <ScrollFadeIn>
+          <section className="mt-8 rounded-3xl border border-white/60 bg-white/70 p-5 shadow-xl backdrop-blur-sm lg:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-(--logo2)/60">
+              Comentarios
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-(--logo2) lg:text-3xl">Quem comprou, recomenda</h2>
+
+            {item.comments.length === 0 && (
+              <p className="mt-3 text-sm text-(--logo2)/70">
+                Este produto ainda nao possui comentarios cadastrados.
+              </p>
+            )}
+
+            <div className="mt-5 grid gap-3 lg:grid-cols-2">
+              {item.comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="flex items-start gap-3 rounded-2xl border border-(--logo2)/10 bg-white/85 p-4 shadow-sm"
+                >
+                  {comment.image ? (
+                    <Image
+                      src={comment.image}
+                      alt={comment.name || "Cliente"}
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--logo2) text-lg font-bold text-white">
+                      {getCommentInitial(comment.name)}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-(--logo2)">{comment.name || "Cliente"}</p>
+                    <p className="text-sm text-(--logo2)/80">{comment.phrase}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </ScrollFadeIn>
 
         <ScrollFadeIn>
-          <div className="flex w-full text-sm justify-between gap-4 p-2 mt-4">
-            <p className="">Privacidade e segurança</p>
-            <p className="">Termos de uso</p>
-            <p className="">Regulamentos</p>
-            <p className="">Trabalhe conosco</p>
-          </div>
+          <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pb-4 text-xs font-medium uppercase tracking-wide text-(--logo2)/60 lg:text-sm">
+            <p>Privacidade e seguranca</p>
+            <p>Termos de uso</p>
+            <p>Regulamentos</p>
+            <p>Trabalhe conosco</p>
+          </footer>
         </ScrollFadeIn>
       </main>
     </div>
