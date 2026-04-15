@@ -36,6 +36,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [editingId, setEditingId] = useState(null);
   const [editingTab, setEditingTab] = useState("product");
   const [categoryDropdownProductId, setCategoryDropdownProductId] = useState(null);
+  const [linhaDropdownProductId, setLinhaDropdownProductId] = useState(null);
 
   const categorySuggestions = useMemo(() => {
     const categories = products
@@ -43,6 +44,16 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
       .filter(Boolean);
 
     return [...new Set(categories)].sort((a, b) =>
+      a.localeCompare(b, "pt-BR", { sensitivity: "base" }),
+    );
+  }, [products]);
+
+  const linhaSuggestions = useMemo(() => {
+    const linhas = products
+      .map((product) => String(product?.linha || "").trim())
+      .filter(Boolean);
+
+    return [...new Set(linhas)].sort((a, b) =>
       a.localeCompare(b, "pt-BR", { sensitivity: "base" }),
     );
   }, [products]);
@@ -83,6 +94,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
         interactions: 0,
         isActive: true,
         category: "",
+          linha: "",
         comments: [createEmptyProductComment()],
         id: newId,
       },
@@ -218,7 +230,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                     <h3 className="font-bold text-gray-800 text-sm truncate">{product.name || "Produto sem nome"}</h3>
                     <p className="text-blue-600 font-black text-xs">{currency(product.price)}</p>
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide">
-                      {totalComments} comentarios, {featuredComments} na home
+                      {totalComments} comentários, {featuredComments} na home
                     </p>
                   </div>
                 </div>
@@ -292,7 +304,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                       : "text-gray-500"
                   }`}
                 >
-                  Comentarios ({totalComments})
+                  Comentários ({totalComments})
                 </button>
               </div>
 
@@ -355,6 +367,41 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                                 }}
                               >
                                 {category}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="sm:col-span-2 relative">
+                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Linha</label>
+                      <input
+                        type="text"
+                        value={product.linha || ""}
+                        onChange={(e) => handleChange(index, "linha", e.target.value)}
+                        onFocus={() => setLinhaDropdownProductId(product.id)}
+                        onBlur={() => {
+                          setTimeout(() => setLinhaDropdownProductId(null), 120);
+                        }}
+                        className="w-full px-4 py-3.5 mt-1 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-purple-400 text-sm font-semibold shadow-inner"
+                        placeholder="Ex: Florais, Amadeirados..."
+                      />
+
+                      {linhaDropdownProductId === product.id && linhaSuggestions.length > 0 && (
+                        <div className="absolute z-20 mt-2 w-full rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
+                          <div className="max-h-44 overflow-y-auto">
+                            {linhaSuggestions.map((linha) => (
+                              <button
+                                key={linha}
+                                type="button"
+                                className="w-full rounded-xl px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100"
+                                onMouseDown={() => {
+                                  handleChange(index, "linha", linha);
+                                  setLinhaDropdownProductId(null);
+                                }}
+                              >
+                                {linha}
                               </button>
                             ))}
                           </div>
@@ -427,7 +474,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                       >
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <p className="text-[11px] font-black uppercase tracking-wide text-gray-400">
-                            Comentario #{commentIndex + 1}
+                            Comentários #{commentIndex + 1}
                           </p>
 
                           {!isEmptyComment && (

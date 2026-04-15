@@ -12,8 +12,12 @@ body,
 #root {
   background: var(--background);
   color: var(--logo2);
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--font-noto-serif), serif;
   scroll-behavior: smooth;
+}
+
+.font-sensory {
+  font-family: var(--font-noto-serif), serif;
 }
 
 

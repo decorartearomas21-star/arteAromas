@@ -3,14 +3,11 @@ import CarouselText from "@/components/CarouselText";
 import { Header } from "@/components/Header/Header";
 import HomeProductsHydrator from "@/components/HomeProductsHydrator";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
+import ProductCard from "@/components/ProductCard";
 import { getHomeData } from "@/app/actions/home";
-import { currency } from "@/utils/currency";
+import { notoSerif } from "@/app/fonts";
 import Image from "next/image";
 import Link from "next/link";
-
-const applyDiscount = (price, discountPercent) => {
-  return price * (1 - discountPercent / 100);
-};
 
 const toCategorySlug = (category) =>
   String(category || "")
@@ -21,63 +18,11 @@ const toCategorySlug = (category) =>
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-");
 
-function ProductCard({ product, className = "" }) {
-  const discountPercent = product.discountPercent || 0;
-  const valorComDesconto = applyDiscount(product.price || 0, discountPercent);
-  const value = discountPercent > 0 ? valorComDesconto : product.price;
-
-  return (
-    <Link
-      href={`/pdp/${product.id}`}
-      className={`flex h-[360px] flex-col rounded-md border border-[var(--logo2)]/50 p-1 text-black shadow-md lg:h-[420px] ${className}`}
-    >
-      <div className="relative h-52 lg:h-60 overflow-hidden rounded-sm">
-        <Image
-          src={product.image || "/imagem1.jpg"}
-          alt={product.name || "Produto"}
-          width={500}
-          height={500}
-          priority
-          className="h-full w-full object-cover object-center shadow-md"
-        />
-        {discountPercent > 0 && (
-          <div className="absolute shadow-md top-2 left-0 rounded-br-full rounded-tr-full bg-[var(--logo1)] text-[var(--logo2)] px-2 py-1 text-sm lg:text-xl">
-            {discountPercent}% OFF
-          </div>
-        )}
-      </div>
-
-      <div className="mt-2 px-1 h-14 lg:h-16">
-        <p
-          className="font-semibold overflow-hidden"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {product.name || "Produto sem nome"}
-        </p>
-      </div>
-
-      <span className="block w-full border-b border-black/10 my-2"></span>
-
-      <div className="mt-auto flex h-11 items-center gap-2 px-1 pb-1">
-        <p className="flex w-full justify-center lg:text-2xl">
-          <span className="font-semibold text-lg">{currency(value)}</span>
-        </p>
-        <span className="flex font-semibold justify-center items-center text-1xl bg-[var(--logo2)] text-white rounded-sm w-full h-10 lg:h-10">
-          Ver
-        </span>
-      </div>
-    </Link>
-  );
-}
-
 export default async function Home({ searchParams }) {
   const homeData = await getHomeData();
   const resolvedSearchParams = (await searchParams) || {};
   const selectedCategorySlug = String(resolvedSearchParams?.categoria || "").trim();
+  const selectedLinhaSlug = String(resolvedSearchParams?.linha || "").trim();
 
   const categoryMap = new Map(
     homeData.products
@@ -86,8 +31,19 @@ export default async function Home({ searchParams }) {
       .map((category) => [toCategorySlug(category), category]),
   );
 
+  const linhaMap = new Map(
+    homeData.products
+      .map((product) => String(product?.linha || "").trim())
+      .filter(Boolean)
+      .map((linha) => [toCategorySlug(linha), linha]),
+  );
+
   const selectedCategoryLabel = selectedCategorySlug
     ? categoryMap.get(selectedCategorySlug) || ""
+    : "";
+
+  const selectedLinhaLabel = selectedLinhaSlug
+    ? linhaMap.get(selectedLinhaSlug) || ""
     : "";
 
   const galleryProducts = selectedCategoryLabel
@@ -96,15 +52,21 @@ export default async function Home({ searchParams }) {
       )
     : homeData.products;
 
+  const filteredGalleryProducts = selectedLinhaLabel
+    ? galleryProducts.filter(
+        (product) => String(product?.linha || "").trim() === selectedLinhaLabel,
+      )
+    : galleryProducts;
+
   const galleryTitle = selectedCategoryLabel
     ? `Galeria ${selectedCategoryLabel}`
     : "Galeria";
-  const bannerTitle = homeData.banner?.title?.trim() || "Transforme sua casa em um refúgio acolhedor";
-  const bannerSubTitle = homeData.banner?.subTitle?.trim() || "Velas artesanais com aromas únicos";
+  const bannerTitle = homeData.banner?.title?.trim() || "Transforme sua casa em um refugio acolhedor";
+  const bannerSubTitle = homeData.banner?.subTitle?.trim() || "Velas artesanais com aromas unicos";
   const bannerImage = homeData.banner?.imageUrl || "/banner.jpg";
   const primaryButtonText = homeData.banner?.primaryButtonText || "Compre Agora";
-  const primaryButtonLink = homeData.banner?.primaryButtonLink || "#lançamentos";
-  const secondaryButtonText = homeData.banner?.secondaryButtonText || "Ver Coleções";
+  const primaryButtonLink = homeData.banner?.primaryButtonLink || "#lancamentos";
+  const secondaryButtonText = homeData.banner?.secondaryButtonText || "Ver Colecoes";
   const secondaryButtonLink = homeData.banner?.secondaryButtonLink || "/home";
 
   return (
@@ -115,7 +77,7 @@ export default async function Home({ searchParams }) {
         <div id="banner" className="w-full relative flex flex-col items-center">
           <div className=" absolute w-full flex justify-center items-center h-screen">
             <div className=" w-full lg:w-[800px] p-4 slideReveal">
-              <p className=" text-4xl lg:text-6xl text-[var(--logo1)] text-shadow-lg font-bold">
+              <p className={`${notoSerif.className} text-4xl lg:text-6xl text-[var(--logo1)] text-shadow-lg font-bold`}>
                 {bannerTitle}
               </p>
               <p className="text-1xl lg:text-2xl text-[var(--logo1)] text-shadow-lg my-4 font-bold">
@@ -196,22 +158,23 @@ export default async function Home({ searchParams }) {
             priority
             className="h-screen w-full object-cover object-center fade"
           />
+          <div className="absolute bottom-0 left-0 w-full h-48 pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, #F2E9D8)" }} />
         </div>
       </header>
-      <main id="lançamentos" className="w-full lg:w-7xl pt-4 fade">
+      <main id="lancamentos" className="w-full lg:w-7xl pt-4 fade">
         <ScrollFadeIn>
           <CarouselText phrases={homeData.texts} />
         </ScrollFadeIn>
 
         <ScrollFadeIn>
-          <p className="text-3xl lg:text-4xl font-medium mt-4 mb-4 px-2 lg:px-10">
+          <p className={`${notoSerif.className} text-3xl lg:text-4xl font-medium mt-4 mb-4 px-2 lg:px-10`}>
             Lançamentos
           </p>
         </ScrollFadeIn>
         <ScrollFadeIn>
           <div className="flex gap-4 overflow-x-auto px-2 pb-2 lg:px-10 lg:overflow-visible">
             {homeData.launches.length === 0 && (
-              <p className="text-gray-500 px-4">Nenhum lançamento cadastrado no painel.</p>
+              <p className="text-gray-500 px-4">Nenhum lancamento cadastrado no painel.</p>
             )}
             {homeData.launches.map((product) => (
               <ProductCard
@@ -225,20 +188,54 @@ export default async function Home({ searchParams }) {
         <ScrollFadeIn>
           <p
             id="galeria"
-            className="text-3xl lg:text-4xl font-medium mt-10 mb-4 px-2 lg:px-10"
+            className={`${notoSerif.className} text-3xl lg:text-4xl font-medium mt-10 mb-4 px-2 lg:px-10`}
           >
             {galleryTitle}
           </p>
         </ScrollFadeIn>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 px-2 lg:px-10">
-          {galleryProducts.map((product) => (
+
+        {linhaMap.size > 0 && (
+          <ScrollFadeIn>
+            <div className="flex items-center gap-3 px-2 lg:px-10 mt-2 mb-4 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-widest text-[var(--logo2)]/50 mr-1">Linha</span>
+              <Link
+                href={selectedCategorySlug ? `?categoria=${selectedCategorySlug}` : "?"}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
+                  !selectedLinhaSlug
+                    ? "bg-[var(--logo2)] text-[var(--logo1)] border-[var(--logo2)]"
+                    : "border-[var(--logo2)]/30 text-[var(--logo2)] hover:border-[var(--logo2)]"
+                }`}
+              >
+                Todas
+              </Link>
+              {[...linhaMap.entries()].map(([slug, label]) => (
+                <Link
+                  key={slug}
+                  href={`?${selectedCategorySlug ? `categoria=${selectedCategorySlug}&` : ""}linha=${slug}`}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
+                    selectedLinhaSlug === slug
+                      ? "bg-[var(--logo2)] text-[var(--logo1)] border-[var(--logo2)]"
+                      : "border-[var(--logo2)]/30 text-[var(--logo2)] hover:border-[var(--logo2)]"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </ScrollFadeIn>
+        )}
+
+        <div className="grid grid-cols-1 gap-5 mt-4 px-2 lg:px-10 lg:grid-cols-3">
+          {filteredGalleryProducts.map((product) => (
             <ScrollFadeIn key={product.id}>
               <ProductCard product={product} className="w-full" />
             </ScrollFadeIn>
           ))}
-          {galleryProducts.length === 0 && (
-            <p className="text-gray-500 col-span-2 lg:col-span-4 text-center py-8">
-              {selectedCategoryLabel
+          {filteredGalleryProducts.length === 0 && (
+            <p className="text-gray-500 col-span-1 lg:col-span-3 text-center py-8">
+              {selectedLinhaLabel
+                ? `Nenhum produto encontrado na linha ${selectedLinhaLabel}.`
+                : selectedCategoryLabel
                 ? `Nenhum produto encontrado na categoria ${selectedCategoryLabel}.`
                 : "Nenhum produto cadastrado no painel."}
             </p>
@@ -248,8 +245,8 @@ export default async function Home({ searchParams }) {
         {homeData.comments.length > 0 && (
           <>
             <ScrollFadeIn>
-              <p className="text-3xl lg:text-3xl font-medium mt-10 mb-4 px-2 lg:px-10">
-                Comentarios
+              <p className={`${notoSerif.className} text-3xl lg:text-3xl font-medium mt-10 mb-4 px-2 lg:px-10`}>
+                Comentários
               </p>
             </ScrollFadeIn>
 
@@ -260,7 +257,7 @@ export default async function Home({ searchParams }) {
         )}
         <ScrollFadeIn>
           <div className="flex w-full text-sm justify-between gap-4 p-2 mt-4">
-            <p className="">Privacidade e segurança</p>
+            <p className="">Privacidade e seguranca</p>
             <p className="">Termos de uso</p>
             <p className="">Regulamentos</p>
             <p className="">Trabalhe conosco</p>

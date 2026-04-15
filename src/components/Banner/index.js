@@ -80,10 +80,10 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
   if (isLoading) return <div className="p-10 animate-pulse text-gray-400">Carregando dados do banner...</div>;
 
   return (
-    <div className="pb-6">
+    <div className="relative pb-24">
       <div className="font-bold mb-2">GESTÃO DO BANNER PRINCIPAL</div>
       
-      <div className="border border-[var(--logo2)] rounded-sm flex flex-col pb-4 gap-4">
+      <div className="border border-(--logo2) rounded-sm flex flex-col pb-4 gap-4">
         <input 
           type="file" 
           ref={fileInputRef} 
@@ -103,7 +103,7 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
             width={1000}
             height={400}
             priority
-            className="w-full lg:w-[800px] h-[300px] object-cover object-center fade transition-opacity group-hover:opacity-80"
+            className="w-full lg:w-200 h-75 object-cover object-center fade transition-opacity group-hover:opacity-80"
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
             <span className="bg-white/90 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
@@ -187,18 +187,35 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
             </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-            className={`w-full md:w-max px-8 py-3 font-bold rounded-xl active:scale-95 transition-all shadow-md ${
-              hasChanges && !saving 
-              ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer" 
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            {saving ? "Salvando..." : "Salvar Alterações"}
-          </button>
         </div>
+      </div>
+
+      <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-3 pointer-events-none">
+        {saving && (
+          <div className="bg-white px-4 py-2 rounded-full shadow-xl border text-[10px] font-bold text-blue-600 animate-bounce">
+            A guardar alterações...
+          </div>
+        )}
+        <button
+          onClick={handleSave}
+          disabled={!hasChanges || saving}
+          className={`pointer-events-auto w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all ${
+            hasChanges && !saving
+              ? "bg-blue-600 text-white hover:bg-blue-700 active:scale-90"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+          title="Salvar banner"
+        >
+          {saving ? (
+            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   );

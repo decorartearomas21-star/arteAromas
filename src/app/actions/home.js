@@ -7,14 +7,42 @@ import { normalizeProducts } from '@/utils/product';
 
 function normalizeTexts(textsData) {
   if (Array.isArray(textsData)) {
-    return textsData.map((item) => String(item || '').trim()).filter(Boolean);
+    return textsData
+      .map((item) => {
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          const titulo = String(item.titulo || item.title || '').trim();
+          const descricao = String(item.descricao || item.description || item.texto || item.text || '').trim();
+
+          if (!titulo && !descricao) return null;
+
+          return { titulo, descricao };
+        }
+
+        const descricao = String(item || '').trim();
+        if (!descricao) return null;
+
+        return { titulo: '', descricao };
+      })
+      .filter(Boolean);
   }
 
   if (!textsData || typeof textsData !== 'object') return [];
 
+  if (Array.isArray(textsData.items)) {
+    return normalizeTexts(textsData.items);
+  }
+
+  if ('frases' in textsData) {
+    const titulo = String(textsData.titulo || '').trim();
+
+    return normalizeTexts(
+      (Array.isArray(textsData.frases) ? textsData.frases : []).map((descricao) => ({ titulo, descricao })),
+    );
+  }
+
   return Object.keys(textsData)
     .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }))
-    .map((key) => String(textsData[key] || '').trim())
+    .map((key) => normalizeTexts([textsData[key]])[0] || null)
     .filter(Boolean);
 }
 

@@ -1,18 +1,6 @@
-import { Inter, Roboto } from "next/font/google";
 import { ProductsProvider } from "@/context/ProductsContext";
+import { inter, notoSerif, roboto } from "@/app/fonts";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500","600", "700", "800", "900"],
-  variable: "--font-inter",
-});
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500","600", "700", "800", "900"],
-  variable: "--font-roboto",
-});
 
 export const metadata = {
   title: "Decor Arte Aromas",
@@ -45,9 +33,9 @@ export default function RootLayout({ children }) {
     <html
       lang="pt"
       suppressHydrationWarning
-      className={`${inter.variable} ${roboto.variable} h-full antialiased`}
+      className={`${inter.variable} ${roboto.variable} ${notoSerif.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
+      <body suppressHydrationWarning className={`${notoSerif.className} min-h-full flex flex-col`}>
         <ProductsProvider>{children}</ProductsProvider>
       </body>
     </html>

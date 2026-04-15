@@ -95,6 +95,7 @@ export const normalizeProduct = (product) => {
     id: String(product.id),
     name: product.name || "Produto sem nome",
     category: String(product.category || ""),
+    linha: String(product.linha || ""),
     description: product.description || "",
     price: Number(product.price || 0),
     image: product.image || product.img || "/imagem1.jpg",

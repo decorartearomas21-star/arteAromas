@@ -178,12 +178,12 @@ export default function PagePdp({ productId }) {
         </div>
       </header>
       <main id="lançamentos" className="w-full lg:w-[800px] text-black fade px-2">
-        <p className="text-1xl lg:text-2xl font-medium mt-4 mb-2 text-shadow-md ">
+        <p className="text-3xl lg:text-4xl font-medium mt-4 mb-2 text-shadow-md ">
           {item.name}
         </p>
         {item.description && (
-          <div className="mt-2 rounded-md bg-white/40 p-3 lg:p-4">
-            <p className="text-sm lg:text-base leading-6 text-black/90">
+          <div className="mt-2 rounded-md py-3 lg:p-4">
+            <p className="text-base lg:text-base leading-6 text-black/90">
               {renderWhatsAppText(item.description)}
             </p>
           </div>
@@ -270,7 +270,7 @@ export default function PagePdp({ productId }) {
         </Link>
         <ScrollFadeIn>
           <p className="text-1xl lg:text-1xl font-medium mt-10 lg:px-10">
-            Comentarios
+            Comentários
           </p>
           {item.comments.length === 0 && (
             <p className="mt-2 text-sm text-gray-600">
