@@ -5,6 +5,7 @@ import {
   getSiteContentDocument,
   saveSiteContentDocument,
 } from '@/lib/site-content';
+import { sanitizeHttpUrl, sanitizeLinkHref } from '@/utils/url';
 
 const BANNER_COLLECTION_NAME = 'site_banner';
 
@@ -31,11 +32,11 @@ export async function saveBanner(formData) {
     const updatedData = {
       title: String(title || ''),
       subTitle: String(subTitle || ''),
-      imageUrl: String(imageUrl || ''),
+      imageUrl: sanitizeHttpUrl(imageUrl, '/banner.jpg'),
       primaryButtonText,
-      primaryButtonLink,
+      primaryButtonLink: sanitizeLinkHref(primaryButtonLink, '#lancamentos'),
       secondaryButtonText,
-      secondaryButtonLink,
+      secondaryButtonLink: sanitizeLinkHref(secondaryButtonLink, '/home'),
     };
 
     await saveSiteContentDocument(BANNER_COLLECTION_NAME, updatedData);

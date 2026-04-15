@@ -5,6 +5,7 @@ import {
   getSiteContentDocument,
   saveSiteContentDocument,
 } from '@/lib/site-content';
+import { sanitizeImageSrc } from '@/utils/url';
 
 const COMMENTS_COLLECTION_NAME = 'site_comments';
 
@@ -22,7 +23,12 @@ export async function getCommentsData() {
 // Salva a lista completa de comentários
 export async function saveCommentsList(commentsArray) {
   try {
-    const safeComments = Array.isArray(commentsArray) ? commentsArray : [];
+    const safeComments = Array.isArray(commentsArray)
+      ? commentsArray.map((comment) => ({
+          ...comment,
+          image: sanitizeImageSrc(comment?.image, ""),
+        }))
+      : [];
 
     await saveSiteContentDocument(COMMENTS_COLLECTION_NAME, safeComments);
 

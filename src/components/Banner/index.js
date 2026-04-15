@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { startTransition, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { saveBanner } from "@/app/actions/banner";
+import { sanitizeImageSrc, sanitizeLinkHref } from "@/utils/url";
 
 const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
   const [title, setTitle] = useState("");
@@ -12,18 +13,22 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
   const [secondaryButtonText, setSecondaryButtonText] = useState("Ver Coleções");
   const [secondaryButtonLink, setSecondaryButtonLink] = useState("link");
   const [imageUrl, setImageUrl] = useState("/banner.jpg");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("/banner.jpg");
   const [saving, setSaving] = useState(false);
   const isIbbShareLink = /^https?:\/\/(www\.)?ibb\.co\//i.test(String(imageUrl || ""));
 
   useEffect(() => {
     if (initialData) {
-      setTitle(initialData.title || "");
-      setSubTitle(initialData.subTitle || "");
-      setPrimaryButtonText(initialData.primaryButtonText || "Compre Agora");
-      setPrimaryButtonLink(initialData.primaryButtonLink || "#lançamentos");
-      setSecondaryButtonText(initialData.secondaryButtonText || "Ver Coleções");
-      setSecondaryButtonLink(initialData.secondaryButtonLink || "/home");
-      setImageUrl(initialData.imageUrl || "/banner.jpg");
+      startTransition(() => {
+        setTitle(initialData.title || "");
+        setSubTitle(initialData.subTitle || "");
+        setPrimaryButtonText(initialData.primaryButtonText || "Compre Agora");
+        setPrimaryButtonLink(sanitizeLinkHref(initialData.primaryButtonLink, "#lancamentos"));
+        setSecondaryButtonText(initialData.secondaryButtonText || "Ver Coleções");
+        setSecondaryButtonLink(sanitizeLinkHref(initialData.secondaryButtonLink, "/home"));
+        setImageUrl(sanitizeImageSrc(initialData.imageUrl, "/banner.jpg"));
+        setImagePreviewUrl(sanitizeImageSrc(initialData.imageUrl, null));
+      });
     }
   }, [initialData]);
 
@@ -32,12 +37,16 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
       title !== (initialData?.title || "") ||
       subTitle !== (initialData?.subTitle || "") ||
       primaryButtonText !== (initialData?.primaryButtonText || "Compre Agora") ||
-      primaryButtonLink !== (initialData?.primaryButtonLink || "#lançamentos") ||
+      primaryButtonLink !== sanitizeLinkHref(initialData?.primaryButtonLink, "#lancamentos") ||
       secondaryButtonText !== (initialData?.secondaryButtonText || "Ver Coleções") ||
-      secondaryButtonLink !== (initialData?.secondaryButtonLink || "/home") ||
-      imageUrl !== (initialData?.imageUrl || "/banner.jpg")
+      secondaryButtonLink !== sanitizeLinkHref(initialData?.secondaryButtonLink, "/home") ||
+      imageUrl !== sanitizeImageSrc(initialData?.imageUrl, "/banner.jpg")
     );
   }, [title, subTitle, primaryButtonText, primaryButtonLink, secondaryButtonText, secondaryButtonLink, imageUrl, initialData]);
+
+  const handleImageBlur = () => {
+    setImagePreviewUrl(sanitizeImageSrc(imageUrl, null));
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -67,14 +76,20 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
       
       <div className="border border-(--logo2) rounded-sm flex flex-col pb-4 gap-4">
         <div className="relative group overflow-hidden">
-          <Image
-            src={imageUrl || "/banner.jpg"}
-            alt="banner"
-            width={1000}
-            height={400}
-            priority
-            className="w-full lg:w-200 h-75 object-cover object-center fade transition-opacity group-hover:opacity-80"
-          />
+          {imagePreviewUrl ? (
+            <Image
+              src={imagePreviewUrl}
+              alt="banner"
+              width={1000}
+              height={400}
+              priority
+              className="w-full lg:w-200 h-75 object-cover object-center fade transition-opacity group-hover:opacity-80"
+            />
+          ) : (
+            <div className="flex h-75 w-full items-center justify-center bg-gray-100 text-xs font-bold uppercase tracking-wide text-gray-400">
+              Sem imagem definida
+            </div>
+          )}
         </div>
 
         <div className="px-4 space-y-4">
@@ -84,6 +99,7 @@ const Banner = ({ initialData, isLoading, onSaveSuccess }) => {
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
+              onBlur={handleImageBlur}
               placeholder="https://..."
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none transition-all text-gray-800 focus:ring-2 focus:ring-blue-500"
             />

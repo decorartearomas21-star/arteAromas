@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { startTransition, useState, useEffect } from "react";
 import Image from "next/image";
 import { saveCommentsList } from "@/app/actions/comments";
+import { sanitizeImageSrc } from "@/utils/url";
 
 const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [comments, setComments] = useState([]);
@@ -10,7 +11,17 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
 
   useEffect(() => {
     if (initialData) {
-      setComments(initialData);
+      startTransition(() => {
+        setComments(
+          Array.isArray(initialData)
+            ? initialData.map((item) => ({
+                ...item,
+                image: sanitizeImageSrc(item?.image, ""),
+                imagePreview: sanitizeImageSrc(item?.image, null),
+              }))
+            : [],
+        );
+      });
     }
   }, [initialData]);
 
@@ -20,10 +31,22 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     setComments(newComments);
   };
 
+  const handleImageBlur = (index) => {
+    setComments((currentComments) => {
+      const newComments = [...currentComments];
+      const currentImage = newComments[index]?.image || "";
+      newComments[index] = {
+        ...newComments[index],
+        imagePreview: sanitizeImageSrc(currentImage, null),
+      };
+      return newComments;
+    });
+  };
+
   const addNewComment = () => {
     setComments([
       ...comments,
-      { name: "", phrase: "", image: "", id: Date.now() }
+      { name: "", phrase: "", image: "", imagePreview: null, id: Date.now() }
     ]);
   };
 
@@ -76,8 +99,13 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
               {/* Avatar Upload */}
               <div className="flex flex-col items-center gap-2">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-100 bg-gray-50">
-                  {item.image ? (
-                    <Image src={item.image} alt="Avatar" fill className="object-cover" />
+                  {(item.imagePreview ?? sanitizeImageSrc(item.image, null)) ? (
+                    <Image
+                      src={item.imagePreview ?? sanitizeImageSrc(item.image, null)}
+                      alt="Avatar"
+                      fill
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-300 text-xs">Sem foto</div>
                   )}
@@ -88,6 +116,7 @@ const CommentsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                     type="url"
                     value={item.image || ""}
                     onChange={(e) => handleChange(index, "image", e.target.value)}
+                    onBlur={() => handleImageBlur(index)}
                     className="mt-1 w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition-all text-xs"
                     placeholder="https://..."
                   />

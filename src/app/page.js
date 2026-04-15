@@ -7,6 +7,7 @@ import ScrollFadeIn from "@/components/ScrollFadeIn";
 import ProductCard from "@/components/ProductCard";
 import { getHomeData } from "@/app/actions/home";
 import { notoSerif } from "@/app/fonts";
+import { sanitizeImageSrc, sanitizeLinkHref } from "@/utils/url";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -39,11 +40,11 @@ export default async function Home({ searchParams }) {
     : "";
   const bannerTitle = homeData.banner?.title?.trim() || "Transforme sua casa em um refugio acolhedor";
   const bannerSubTitle = homeData.banner?.subTitle?.trim() || "Velas artesanais com aromas unicos";
-  const bannerImage = homeData.banner?.imageUrl || "/banner.jpg";
+  const bannerImage = sanitizeImageSrc(homeData.banner?.imageUrl, "/banner.jpg");
   const primaryButtonText = homeData.banner?.primaryButtonText || "Compre Agora";
-  const primaryButtonLink = homeData.banner?.primaryButtonLink || "#lancamentos";
+  const primaryButtonLink = sanitizeLinkHref(homeData.banner?.primaryButtonLink, "#lancamentos");
   const secondaryButtonText = homeData.banner?.secondaryButtonText || "Ver Colecoes";
-  const secondaryButtonLink = homeData.banner?.secondaryButtonLink || "/home";
+  const secondaryButtonLink = sanitizeLinkHref(homeData.banner?.secondaryButtonLink, "/home");
 
   return (
     <div className="relative flex flex-col items-center overflow-x-hidden bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_58%)]">

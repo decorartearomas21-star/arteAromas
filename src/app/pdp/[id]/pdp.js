@@ -157,7 +157,7 @@ export default function PagePdp({ productId }) {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center overflow-hidden bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_58%)] pb-16">
-      <Header />
+      <Header disable />
       <div className="pointer-events-none absolute -left-16 top-36 z-0 h-52 w-52 rounded-full bg-amber-200/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-52 z-0 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
 

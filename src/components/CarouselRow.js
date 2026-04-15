@@ -4,6 +4,7 @@ import React from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 import Image from "next/image";
+import { sanitizeImageSrc } from "@/utils/url";
 
 const defaultComments = [
   {
@@ -54,7 +55,7 @@ export default function TestimonialSection({ comments = [] }) {
     >
       {image ? (
         <Image
-          src={image}
+          src={sanitizeImageSrc(image, "")}
           alt={name}
           width={40}
           height={40}

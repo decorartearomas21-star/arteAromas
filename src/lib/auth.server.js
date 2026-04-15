@@ -91,19 +91,6 @@ export function verifySessionCookieServer(cookieValue, secret) {
   return nodeTimingSafeEqual(expectedBuffer, incomingBuffer);
 }
 
-function buildFallbackLoginUser() {
-  return {
-    id: process.env.LOGIN_USER_ID || "decorador-admin",
-    email:
-      process.env.LOGIN_EMAIL ||
-      process.env.AUTH_EMAIL ||
-      "admin@decorartearomas.com",
-    password:
-      process.env.LOGIN_PASSWORD || process.env.AUTH_PASSWORD || "123456",
-    passwordHash: process.env.LOGIN_PASSWORD_HASH || "",
-  };
-}
-
 export async function getLoginUserFromMongo() {
   try {
     const data = await getSiteContentDocument(LOGIN_USER_COLLECTION_NAME, null);
@@ -126,7 +113,12 @@ export async function getLoginUserFromMongo() {
 
 export async function authenticateFixedUserFromMongo({ email, password }) {
   const mongoResult = await getLoginUserFromMongo();
-  const user = mongoResult.ok ? mongoResult.data : buildFallbackLoginUser();
+
+  if (!mongoResult.ok) {
+    return { success: false, message: "Credenciais inválidas" };
+  }
+
+  const user = mongoResult.data;
 
   const normalizedEmail = normalizeEmail(email);
   const storedEmail = normalizeEmail(
@@ -142,20 +134,15 @@ export async function authenticateFixedUserFromMongo({ email, password }) {
   }
 
   const passwordHash = pickFirstString(user, ["passwordHash", "hash", "senhaHash"]);
-  const plainPassword = pickFirstString(user, ["password", "senha", "pass"]);
 
   if (passwordHash) {
     if (!matchPasswordHash(password, passwordHash)) {
       return { success: false, message: "Credenciais inválidas" };
     }
-  } else if (plainPassword) {
-    if (String(password) !== String(plainPassword)) {
-      return { success: false, message: "Credenciais inválidas" };
-    }
   } else {
     return {
       success: false,
-      message: "login-user document needs passwordHash (recommended) or password.",
+      message: "login-user document needs passwordHash.",
     };
   }
 

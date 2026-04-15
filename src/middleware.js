@@ -3,7 +3,7 @@ import { SESSION_COOKIE_NAME, verifySessionCookieEdge } from "./lib/auth.shared"
 
 function redirectToLogin(request) {
   const url = request.nextUrl.clone();
-  url.pathname = "/decorador";
+  url.pathname = "/artesao";
   url.searchParams.set("from", request.nextUrl.pathname);
   return NextResponse.redirect(url);
 }

@@ -4,6 +4,7 @@ import { getBannerData } from '@/app/actions/banner';
 import { getTextsData } from '@/app/actions/texts';
 import { getProductsData } from '@/app/actions/products';
 import { normalizeProducts } from '@/utils/product';
+import { sanitizeImageSrc } from '@/utils/url';
 
 function normalizeTexts(textsData) {
   if (Array.isArray(textsData)) {
@@ -50,9 +51,12 @@ function getFeaturedComments(products) {
   if (!Array.isArray(products)) return [];
 
   return products.flatMap((product) =>
-    (product.comments || []).filter(
-      (comment) => comment.showOnHome && (comment.name || comment.phrase || comment.image),
-    ),
+    (product.comments || [])
+      .filter((comment) => comment.showOnHome && (comment.name || comment.phrase || comment.image))
+      .map((comment) => ({
+        ...comment,
+        image: sanitizeImageSrc(comment.image, ""),
+      })),
   );
 }
 

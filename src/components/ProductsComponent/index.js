@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, startTransition } from "react";
 import Image from "next/image";
 import { saveProductsList } from "@/app/actions/products";
 import { currency } from "@/utils/currency";
@@ -10,6 +10,7 @@ import {
   prepareProductsForEditor,
   prepareProductsForStorage,
 } from "@/utils/product";
+import { sanitizeImageSrc } from "@/utils/url";
 
 const getCommentInitial = (name) => {
   const trimmedName = String(name || "").trim();
@@ -58,13 +59,53 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   }, [products]);
 
   useEffect(() => {
-    if (initialData) setProducts(prepareProductsForEditor(initialData));
+    if (initialData) {
+      startTransition(() => {
+        setProducts(prepareProductsForEditor(initialData));
+      });
+    }
   }, [initialData]);
 
   const handleChange = (index, field, value) => {
     const newProducts = [...products];
     newProducts[index][field] = value;
     setProducts(newProducts);
+  };
+
+  const handleImageBlur = (index) => {
+    setProducts((currentProducts) => {
+      const newProducts = [...currentProducts];
+      const currentImage = newProducts[index]?.image || "";
+      newProducts[index] = {
+        ...newProducts[index],
+        imagePreview: sanitizeImageSrc(currentImage, null),
+      };
+      return newProducts;
+    });
+  };
+
+  const handleCommentImageBlur = (productIndex, commentIndex) => {
+    setProducts((currentProducts) => {
+      const newProducts = [...currentProducts];
+      const product = newProducts[productIndex];
+      if (!product) return currentProducts;
+
+      const comments = Array.isArray(product.comments) ? [...product.comments] : [];
+      const currentComment = comments[commentIndex];
+      if (!currentComment) return currentProducts;
+
+      comments[commentIndex] = {
+        ...currentComment,
+        imagePreview: sanitizeImageSrc(currentComment.image, null),
+      };
+
+      newProducts[productIndex] = {
+        ...product,
+        comments,
+      };
+
+      return newProducts;
+    });
   };
 
   const addNewProduct = () => {
@@ -77,11 +118,12 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
         price: 0,
         discount: "",
         image: "",
+        imagePreview: null,
         rating: 10,
         interactions: 0,
         isActive: true,
         category: "",
-          linha: "",
+        linha: "",
         comments: [createEmptyProductComment()],
         id: newId,
       },
@@ -181,6 +223,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
           const featuredComments = (product.comments || []).filter(
             (comment) => hasProductCommentContent(comment) && comment.showOnHome,
           ).length;
+          const productPreviewSrc = product.imagePreview ?? sanitizeImageSrc(product.image, null);
 
           if (!isEditing) {
             return (
@@ -191,8 +234,8 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-                    {product.image ? (
-                      <Image src={product.image} alt={product.name} fill className="object-cover" />
+                    {productPreviewSrc ? (
+                      <Image src={productPreviewSrc} alt={product.name} fill className="object-cover" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-[8px] text-gray-300 font-bold uppercase">S/ Foto</div>
                     )}
@@ -284,8 +327,8 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                 {/* Coluna de Mídia */}
                 <div className="w-full lg:w-56 space-y-3">
                   <div className="relative aspect-square w-full rounded-2xl overflow-hidden border-2 border-gray-50 bg-gray-50">
-                    {product.image ? (
-                      <Image src={product.image} alt={product.name} fill className="object-cover" />
+                    {productPreviewSrc ? (
+                      <Image src={productPreviewSrc} alt={product.name} fill className="object-cover" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-[10px] text-gray-300 font-bold">SEM FOTO</div>
                     )}
@@ -296,6 +339,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                       type="url"
                       value={product.image || ""}
                       onChange={(e) => handleChange(index, "image", e.target.value)}
+                      onBlur={() => handleImageBlur(index)}
                       className="w-full px-4 py-3 mt-1 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-400 text-sm font-semibold shadow-inner"
                       placeholder="https://..."
                     />
@@ -443,6 +487,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                 <div className="space-y-4">
                   {(product.comments || []).map((comment, commentIndex) => {
                     const isEmptyComment = !hasProductCommentContent(comment);
+                    const commentPreviewSrc = comment.imagePreview ?? sanitizeImageSrc(comment.image, null);
 
                     return (
                       <div
@@ -472,9 +517,9 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                         <div className="flex flex-col gap-6 lg:flex-row">
                           <div className="w-full lg:w-56 space-y-3">
                             <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-inner">
-                              {comment.image ? (
+                              {commentPreviewSrc ? (
                                 <Image
-                                  src={comment.image}
+                                  src={commentPreviewSrc}
                                   alt={comment.name || "Cliente"}
                                   width={56}
                                   height={56}
@@ -495,6 +540,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                                 onChange={(e) =>
                                   handleCommentChange(index, commentIndex, "image", e.target.value)
                                 }
+                                onBlur={() => handleCommentImageBlur(index, commentIndex)}
                                 className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold shadow-inner outline-none focus:ring-2 focus:ring-blue-400"
                                 placeholder="https://..."
                               />

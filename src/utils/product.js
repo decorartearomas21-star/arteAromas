@@ -1,3 +1,5 @@
+import { sanitizeImageSrc } from "@/utils/url";
+
 export const getDiscountPercent = (discount) => {
   if (typeof discount === "number") return discount;
   if (typeof discount !== "string") return 0;
@@ -64,13 +66,17 @@ export const sanitizeProductComments = (comments) => {
       ...comment,
       name: comment.name.trim(),
       phrase: comment.phrase.trim(),
-      image: comment.image.trim(),
+      image: sanitizeImageSrc(comment.image, ""),
     }));
 };
 
 export const prepareProductForEditor = (product) => ({
   ...product,
-  comments: ensureEditableProductComments(product?.comments),
+  imagePreview: sanitizeImageSrc(product?.image || product?.img || "", null),
+  comments: ensureEditableProductComments(product?.comments).map((comment) => ({
+    ...comment,
+    imagePreview: sanitizeImageSrc(comment?.image, null),
+  })),
 });
 
 export const prepareProductsForEditor = (products) => {
@@ -84,6 +90,8 @@ export const prepareProductsForStorage = (products) => {
 
   return products.map((product) => ({
     ...product,
+    image: sanitizeImageSrc(product?.image || product?.img || "", ""),
+    imagePreview: undefined,
     comments: sanitizeProductComments(product?.comments),
   }));
 };
@@ -98,7 +106,7 @@ export const normalizeProduct = (product) => {
     linha: String(product.linha || ""),
     description: product.description || "",
     price: Number(product.price || 0),
-    image: product.image || product.img || "/imagem1.jpg",
+    image: sanitizeImageSrc(product.image || product.img || "/imagem1.jpg", "/imagem1.jpg"),
     discountPercent: getDiscountPercent(
       product.discountPercent ?? product.discount ?? product.discont,
     ),

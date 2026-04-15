@@ -1,5 +1,7 @@
 'use server';
 
+import { sanitizeImageSrc } from '@/utils/url';
+
 export async function uploadImage(formData) {
   const imageUrl = String(formData.get('imageUrl') || '').trim();
 
@@ -7,5 +9,5 @@ export async function uploadImage(formData) {
     throw new Error('Nenhuma URL de imagem informada');
   }
 
-  return imageUrl;
+  return sanitizeImageSrc(imageUrl, '');
 }

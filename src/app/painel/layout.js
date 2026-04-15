@@ -9,13 +9,13 @@ export default async function PainelLayout({ children }) {
   const secret = process.env.COOKIE_SECRET;
 
   if (!sessionValue || !secret) {
-    redirect("/decorador");
+    redirect("/artesao");
   }
 
   const isValid = verifySessionCookieServer(sessionValue, secret);
 
   if (!isValid) {
-    redirect("/decorador");
+    redirect("/artesao");
   }
 
   return children;
