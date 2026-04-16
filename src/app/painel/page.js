@@ -107,9 +107,7 @@ export default function PainelPage() {
 
         {activeTab === "produtos" && (
           <section className="fade-in">
-            <div className="font-bold mb-4 uppercase tracking-wide text-gray-600 text-sm">
-              Gestão de produto
-            </div>
+
             <div className="border border-gray-200 rounded-xl bg-white p-2 shadow-sm">
               <ProductsComponent
                 initialData={productsData}

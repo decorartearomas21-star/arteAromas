@@ -30,6 +30,26 @@ const ensureTrailingComment = (comments) => {
   return safeComments;
 };
 
+const hasMeaningfulProductContent = (product) => {
+  if (!product || typeof product !== "object") return false;
+
+  const sanitized = prepareProductsForStorage([product])[0];
+  if (!sanitized) return false;
+
+  return Boolean(
+    String(sanitized.name || "").trim() ||
+      String(sanitized.description || "").trim() ||
+      String(sanitized.category || "").trim() ||
+      String(sanitized.linha || "").trim() ||
+      String(sanitized.discount || "").trim() ||
+      String(sanitized.image || "").trim() ||
+      Number(sanitized.price || 0) > 0 ||
+      Number(sanitized.rating || 10) !== 10 ||
+      sanitized.isActive === false ||
+      (Array.isArray(sanitized.comments) && sanitized.comments.length > 0)
+  );
+};
+
 const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [products, setProducts] = useState([]);
   const [savingProductId, setSavingProductId] = useState(null);
@@ -57,6 +77,31 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
       a.localeCompare(b, "pt-BR", { sensitivity: "base" }),
     );
   }, [products]);
+
+  const initialProductSignatures = useMemo(() => {
+    const normalizedInitial = prepareProductsForStorage(Array.isArray(initialData) ? initialData : []);
+
+    return new Map(
+      normalizedInitial.map((product) => [String(product.id), JSON.stringify(product)]),
+    );
+  }, [initialData]);
+
+  const hasProductChanges = (product) => {
+    if (!product) return false;
+
+    const normalizedCurrent = prepareProductsForStorage([product])[0];
+    if (!normalizedCurrent) return false;
+
+    const productId = String(normalizedCurrent.id || "");
+    const currentSignature = JSON.stringify(normalizedCurrent);
+    const initialSignature = initialProductSignatures.get(productId);
+
+    if (!initialSignature) {
+      return hasMeaningfulProductContent(product);
+    }
+
+    return currentSignature !== initialSignature;
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -256,6 +301,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
             (comment) => hasProductCommentContent(comment) && comment.showOnHome,
           ).length;
           const productPreviewSrc = product.imagePreview ?? sanitizeImageSrc(product.image, null);
+          const canSaveProduct = hasProductChanges(product);
 
           if (!isEditing) {
             return (
@@ -636,7 +682,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
                 <button
                   type="button"
                   onClick={() => handleSaveProduct(index)}
-                  disabled={savingProductId === product.id}
+                  disabled={savingProductId === product.id || !canSaveProduct}
                   className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   {savingProductId === product.id ? (

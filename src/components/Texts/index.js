@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { saveTexts } from "@/app/actions/texts";
 
 const createEmptyItem = () => ({
@@ -80,10 +80,6 @@ export default function Texts({ initialData, isLoading, onSaveSuccess }) {
   const [items, setItems] = useState([createEmptyItem()]);
   const [saving, setSaving] = useState(false);
 
-  const hasContent = items.some(
-    (item) => String(item?.titulo || "").trim() || String(item?.descricao || "").trim(),
-  );
-
   useEffect(() => {
     setItems(ensureEditableItems(extractTextItems(initialData)));
   }, [initialData]);
@@ -96,6 +92,21 @@ export default function Texts({ initialData, isLoading, onSaveSuccess }) {
         descricao: String(item?.descricao || "").trim(),
       }))
       .filter((item) => item.titulo || item.descricao);
+
+  const buildComparablePayload = (sourceItems) =>
+    sourceItems
+      .map((item) => ({
+        titulo: String(item?.titulo || "").trim(),
+        descricao: String(item?.descricao || "").trim(),
+      }))
+      .filter((item) => item.titulo || item.descricao);
+
+  const hasChanges = useMemo(() => {
+    const currentComparable = buildComparablePayload(items);
+    const initialComparable = buildComparablePayload(extractTextItems(initialData));
+
+    return JSON.stringify(currentComparable) !== JSON.stringify(initialComparable);
+  }, [items, initialData]);
 
   const persistItems = async (nextItems, successMessage) => {
     setSaving(true);
@@ -184,9 +195,9 @@ export default function Texts({ initialData, isLoading, onSaveSuccess }) {
                     </button>
                     <button
                       onClick={handleUpdate}
-                      disabled={saving || !hasContent}
+                      disabled={saving || !hasChanges}
                       className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-black uppercase tracking-wide transition-all ${
-                        saving || !hasContent
+                        saving || !hasChanges
                           ? "cursor-not-allowed bg-gray-200 text-gray-500"
                           : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"
                       }`}
