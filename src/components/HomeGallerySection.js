@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
 
@@ -40,15 +40,10 @@ export default function HomeGallerySection({
     );
   }, [galleryProducts]);
 
-  const selectedLinhaLabel = selectedLinhaSlug
-    ? linhaMap.get(selectedLinhaSlug) || ""
+  const effectiveSelectedLinhaSlug = linhaMap.has(selectedLinhaSlug) ? selectedLinhaSlug : "";
+  const selectedLinhaLabel = effectiveSelectedLinhaSlug
+    ? linhaMap.get(effectiveSelectedLinhaSlug) || ""
     : "";
-
-  useEffect(() => {
-    if (selectedLinhaSlug && !linhaMap.has(selectedLinhaSlug)) {
-      setSelectedLinhaSlug("");
-    }
-  }, [linhaMap, selectedLinhaSlug]);
 
   const filteredGalleryProducts = useMemo(() => {
     if (!selectedLinhaLabel) return galleryProducts;
@@ -80,7 +75,7 @@ export default function HomeGallerySection({
               type="button"
               onClick={() => setSelectedLinhaSlug("")}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-all ${
-                !selectedLinhaSlug
+                !effectiveSelectedLinhaSlug
                   ? "border-(--logo2) bg-(--logo2) text-(--logo1)"
                   : "border-(--logo2)/30 text-(--logo2) hover:border-(--logo2)"
               }`}
@@ -94,7 +89,7 @@ export default function HomeGallerySection({
                 type="button"
                 onClick={() => setSelectedLinhaSlug(slug)}
                 className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-all ${
-                  selectedLinhaSlug === slug
+                  effectiveSelectedLinhaSlug === slug
                     ? "border-(--logo2) bg-(--logo2) text-(--logo1)"
                     : "border-(--logo2)/30 text-(--logo2) hover:border-(--logo2)"
                 }`}

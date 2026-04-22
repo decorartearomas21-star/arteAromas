@@ -2,40 +2,40 @@
 
 import { useState, useEffect } from "react";
 import Banner from "@/components/Banner";
+import ProductHighlights from "@/components/ProductHighlights";
 import Texts from "@/components/Texts";
 import ProductsComponent from "@/components/ProductsComponent";
 import { Header } from "@/components/Header/Header";
 
 import { getBannerData } from "@/app/actions/banner";
+import { getProductHighlightsData } from "@/app/actions/productHighlights";
 import { getTextsData } from "@/app/actions/texts";
 import { getProductsData } from "@/app/actions/products";
-
-
 
 export default function PainelPage() {
   const [activeTab, setActiveTab] = useState("banner");
 
-  // --- Estados Globais do Painel ---
   const [bannerData, setBannerData] = useState(null);
   const [productsData, setProductsData] = useState([]);
   const [textsData, setTextsData] = useState(null);
+  const [productHighlightsData, setProductHighlightsData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Carregamento centralizado (Executa apenas 1 vez ao abrir o painel)
   useEffect(() => {
     async function loadAllData() {
       setLoading(true);
       try {
-        const [banner, texts, prodcuts] = await Promise.all([
+        const [banner, texts, prodcuts, productHighlights] = await Promise.all([
           getBannerData(),
           getTextsData(),
-          getProductsData()
+          getProductsData(),
+          getProductHighlightsData(),
         ]);
 
         if (prodcuts) setProductsData(prodcuts);
         if (banner) setBannerData(banner);
         if (texts) setTextsData(texts);
-        
+        if (productHighlights) setProductHighlightsData(productHighlights);
       } catch (error) {
         console.error("Erro ao carregar dados do painel:", error);
       } finally {
@@ -49,6 +49,7 @@ export default function PainelPage() {
   const tabs = [
     { id: "banner", label: "Banner", icon: "🖼️" },
     { id: "produtos", label: "Produtos", icon: "📦" },
+    { id: "destaques", label: "Destaques", icon: "⭐" },
     { id: "textos", label: "Textos", icon: "📝" },
   ];
 
@@ -58,7 +59,6 @@ export default function PainelPage() {
         <Header disable />
       </header>
 
-      {/* Navegação Sticky */}
       <nav className="w-full sticky top-0 z-20 bg-white border-b border-gray-200">
         <div className="max-w-[800px] mx-auto flex overflow-x-auto no-scrollbar py-4 px-4 space-x-3 scroll-smooth">
           {tabs.map((tab) => (
@@ -82,8 +82,6 @@ export default function PainelPage() {
       </nav>
 
       <main className="w-full lg:w-[800px] pt-8 px-4 pb-20">
-        {/* Renderização Condicional com os dados já carregados */}
-
         {activeTab === "banner" && (
           <section className="fade-in">
             <Banner
@@ -94,20 +92,8 @@ export default function PainelPage() {
           </section>
         )}
 
-        {activeTab === "textos" && (
-          <section className="fade-in">
-            {/* Aqui você passaria os dados para o componente de Textos da mesma forma */}
-            <Texts
-              initialData={textsData}
-              isLoading={loading}
-              onSaveSuccess={(newData) => setTextsData(newData)}
-            />
-          </section>
-        )}
-
         {activeTab === "produtos" && (
           <section className="fade-in">
-
             <div className="border border-gray-200 rounded-xl bg-white p-2 shadow-sm">
               <ProductsComponent
                 initialData={productsData}
@@ -115,6 +101,28 @@ export default function PainelPage() {
                 onSaveSuccess={(newData) => setProductsData(newData)}
               />
             </div>
+          </section>
+        )}
+
+        {activeTab === "destaques" && (
+          <section className="fade-in">
+            <div className="border border-gray-200 rounded-xl bg-white p-2 shadow-sm">
+              <ProductHighlights
+                initialData={productHighlightsData}
+                isLoading={loading}
+                onSaveSuccess={(newData) => setProductHighlightsData(newData)}
+              />
+            </div>
+          </section>
+        )}
+
+        {activeTab === "textos" && (
+          <section className="fade-in">
+            <Texts
+              initialData={textsData}
+              isLoading={loading}
+              onSaveSuccess={(newData) => setTextsData(newData)}
+            />
           </section>
         )}
       </main>

@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { getProductById } from "@/app/actions/products";
 import { Header } from "@/components/Header/Header";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
+import { DEFAULT_PRODUCT_HIGHLIGHTS, normalizeProductHighlightsPayload } from "@/lib/product-highlights";
 import { useProducts } from "@/context/ProductsContext";
 import { currency } from "@/utils/currency";
 import { normalizeProduct } from "@/utils/product";
@@ -89,11 +90,12 @@ const renderWhatsAppText = (text) => {
   ));
 };
 
-export default function PagePdp({ productId }) {
+export default function PagePdp({ productId, productHighlights }) {
   const { getProductById: getCachedProductById, isHydrated, upsertProduct } = useProducts();
   const [fallbackItem, setFallbackItem] = useState(null);
   const [isFetchingFallback, setIsFetchingFallback] = useState(false);
   const cachedItem = getCachedProductById(productId);
+  const highlightItems = normalizeProductHighlightsPayload(productHighlights);
 
   useEffect(() => {
     let isMounted = true;
@@ -129,7 +131,7 @@ export default function PagePdp({ productId }) {
   if (!item) {
     return (
       <div className="flex min-h-screen flex-col items-center bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_60%)]">
-        <Header />
+        <Header disable />
         <main className="w-full max-w-3xl px-4 pt-32 text-center text-black">
           <p className="text-2xl font-semibold">
             {isFetchingFallback ? "Carregando produto..." : "Produto não encontrado."}
@@ -194,7 +196,7 @@ export default function PagePdp({ productId }) {
 
               <div className="mt-5 space-y-3 rounded-2xl bg-[#f7efe2] p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-(--logo2)/60">
-                  Valor final
+                  Por apenas
                 </p>
                 <p className="text-4xl font-black tracking-tight text-(--logo2) lg:text-5xl">
                   {currency(value)}
@@ -207,7 +209,7 @@ export default function PagePdp({ productId }) {
                     </span>
                   </div>
                 )}
-                <p className="text-sm text-(--logo2)/70">ou em 2x de {currency(value / 2)} sem juros</p>
+                <p className="text-sm text-(--logo2)/70">Pagamento via pix</p>
               </div>
 
               <Link
@@ -225,18 +227,11 @@ export default function PagePdp({ productId }) {
               </Link>
 
               <div className="mt-5 grid grid-cols-2 gap-2 text-xs font-semibold text-(--logo2)/80">
-                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
-                  Entrega nacional
-                </div>
-                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
-                  Compra segura
-                </div>
-                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
-                  Produto artesanal
-                </div>
-                <div className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
-                  Presenteavel
-                </div>
+                {(highlightItems.length ? highlightItems : DEFAULT_PRODUCT_HIGHLIGHTS).map((item) => (
+                  <div key={item.id} className="rounded-xl border border-(--logo2)/10 bg-white p-2 text-center">
+                    {item.label}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
