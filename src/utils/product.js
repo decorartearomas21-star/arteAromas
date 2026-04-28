@@ -1,5 +1,8 @@
 import { sanitizeImageSrc } from "@/utils/url";
 
+export const MAX_PRODUCT_IMAGES = 5;
+const MAX_PRODUCT_EXTRA_IMAGES = MAX_PRODUCT_IMAGES - 1;
+
 export const getDiscountPercent = (discount) => {
   if (typeof discount === "number") return discount;
   if (typeof discount !== "string") return 0;
@@ -10,6 +13,32 @@ export const getDiscountPercent = (discount) => {
 
 const createCommentId = () =>
   `comment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const hasMeaningfulProductImage = (value) => String(value || "").trim().length > 0;
+
+export const normalizeProductImages = (images) => {
+  if (!Array.isArray(images)) return [];
+
+  return images
+    .map((image) => String(image || "").trim())
+    .map((image) => sanitizeImageSrc(image, ""))
+    .map((image) => String(image || "").trim())
+    .filter(Boolean)
+    .slice(0, MAX_PRODUCT_EXTRA_IMAGES);
+};
+
+export const ensureEditableProductImages = (images) => {
+  const normalizedImages = normalizeProductImages(images);
+
+  if (
+    normalizedImages.length === 0 ||
+    hasMeaningfulProductImage(normalizedImages[normalizedImages.length - 1])
+  ) {
+    normalizedImages.push("");
+  }
+
+  return normalizedImages.slice(0, MAX_PRODUCT_EXTRA_IMAGES);
+};
 
 export const hasProductCommentContent = (comment) => {
   if (!comment || typeof comment !== "object") return false;
@@ -73,6 +102,7 @@ export const sanitizeProductComments = (comments) => {
 export const prepareProductForEditor = (product) => ({
   ...product,
   imagePreview: sanitizeImageSrc(product?.image || product?.img || "", null),
+  images: ensureEditableProductImages(product?.images),
   comments: ensureEditableProductComments(product?.comments).map((comment) => ({
     ...comment,
     imagePreview: sanitizeImageSrc(comment?.image, null),
@@ -92,6 +122,7 @@ export const prepareProductsForStorage = (products) => {
     ...product,
     image: sanitizeImageSrc(product?.image || product?.img || "", ""),
     imagePreview: undefined,
+    images: normalizeProductImages(product?.images),
     comments: sanitizeProductComments(product?.comments),
   }));
 };
@@ -112,6 +143,7 @@ export const normalizeProduct = (product) => {
     ),
     rating: Number(product.rating || 0),
     isActive: product.isActive !== false,
+    images: normalizeProductImages(product.images),
     comments: sanitizeProductComments(product.comments),
   };
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { getProductById } from "@/app/actions/products";
 import { Header } from "@/components/Header/Header";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
@@ -106,6 +106,14 @@ export default function PagePdp({ productId, productHighlights }) {
   const [fallbackItem, setFallbackItem] = useState(null);
   const [isFetchingFallback, setIsFetchingFallback] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const galleryScrollRef = useRef(null);
+  const galleryDragRef = useRef({
+    isDragging: false,
+    pointerId: null,
+    startX: 0,
+    startScrollLeft: 0,
+  });
   const cachedItem = getCachedProductById(productId);
   const highlightItems = normalizeProductHighlightsPayload(productHighlights);
 
@@ -139,6 +147,117 @@ export default function PagePdp({ productId, productHighlights }) {
     () => normalizeProduct(cachedItem || fallbackItem),
     [cachedItem, fallbackItem],
   );
+
+  const galleryImages = useMemo(() => {
+    if (!item) return [];
+
+    return [item.image, ...(Array.isArray(item.images) ? item.images : [])]
+      .map((image) => String(image || "").trim())
+      .filter(Boolean)
+      .slice(0, 5);
+  }, [item]);
+
+  useEffect(() => {
+    const nextIndex = Math.min(activeImageIndex, Math.max(galleryImages.length - 1, 0));
+    setActiveImageIndex(nextIndex);
+  }, [activeImageIndex, galleryImages.length]);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+
+    const galleryElement = galleryScrollRef.current;
+    if (galleryElement) {
+      galleryElement.scrollTo({ left: 0, behavior: "auto" });
+    }
+  }, [item?.id]);
+
+  const handleGalleryScroll = () => {
+    const galleryElement = galleryScrollRef.current;
+    if (!galleryElement) return;
+
+    const nextIndex = Math.round(galleryElement.scrollLeft / galleryElement.clientWidth);
+    const clampedIndex = Math.min(Math.max(nextIndex, 0), Math.max(galleryImages.length - 1, 0));
+
+    setActiveImageIndex(clampedIndex);
+  };
+
+  const scrollToGalleryImage = (index) => {
+    const galleryElement = galleryScrollRef.current;
+    const clampedIndex = Math.min(Math.max(index, 0), Math.max(galleryImages.length - 1, 0));
+
+    setActiveImageIndex(clampedIndex);
+
+    if (!galleryElement) return;
+
+    galleryElement.scrollTo({
+      left: clampedIndex * galleryElement.clientWidth,
+      behavior: "smooth",
+    });
+  };
+
+  const handleGalleryPointerDown = (event) => {
+    if (galleryImages.length <= 1 || event.button !== 0) return;
+
+    const galleryElement = galleryScrollRef.current;
+    if (!galleryElement) return;
+
+    galleryDragRef.current = {
+      isDragging: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: galleryElement.scrollLeft,
+    };
+
+    galleryElement.setPointerCapture(event.pointerId);
+  };
+
+  const handleGalleryPointerMove = (event) => {
+    const galleryElement = galleryScrollRef.current;
+    const dragState = galleryDragRef.current;
+
+    if (!galleryElement || !dragState.isDragging || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const distance = event.clientX - dragState.startX;
+    galleryElement.scrollLeft = dragState.startScrollLeft - distance;
+  };
+
+  const finishGalleryDrag = (event) => {
+    const galleryElement = galleryScrollRef.current;
+    const dragState = galleryDragRef.current;
+
+    if (!galleryElement || dragState.pointerId !== event.pointerId) return;
+
+    const dragDistance = event.clientX - dragState.startX;
+    const galleryWidth = galleryElement.clientWidth || 1;
+    const swipeThreshold = Math.max(40, galleryWidth * 0.12);
+    const currentIndex = Math.round(galleryElement.scrollLeft / galleryWidth);
+    let targetIndex = currentIndex;
+
+    if (Math.abs(dragDistance) > swipeThreshold) {
+      targetIndex = dragDistance > 0 ? currentIndex - 1 : currentIndex + 1;
+    }
+
+    targetIndex = Math.min(Math.max(targetIndex, 0), Math.max(galleryImages.length - 1, 0));
+
+    galleryDragRef.current = {
+      isDragging: false,
+      pointerId: null,
+      startX: 0,
+      startScrollLeft: 0,
+    };
+
+    if (galleryElement.hasPointerCapture(event.pointerId)) {
+      galleryElement.releasePointerCapture(event.pointerId);
+    }
+
+    if (galleryImages.length > 0) {
+      scrollToGalleryImage(targetIndex);
+    }
+  };
 
   if (!item) {
     return (
@@ -210,19 +329,61 @@ export default function PagePdp({ productId, productHighlights }) {
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
           <div className="rounded-3xl border border-white/60 bg-white/70 p-3 shadow-xl backdrop-blur-sm lg:p-4">
             <div className="relative overflow-hidden rounded-2xl bg-[#efe4d2]">
-              {item.image && (
-                <Image
-                  src={item.image}
-                  alt={item.name || "Produto"}
-                  width={1280}
-                  height={900}
-                  priority
-                  className="h-85 w-full object-cover object-center lg:h-130"
-                />
-              )}
+              <div
+                ref={galleryScrollRef}
+                onScroll={handleGalleryScroll}
+                onPointerDown={handleGalleryPointerDown}
+                onPointerMove={handleGalleryPointerMove}
+                onPointerUp={finishGalleryDrag}
+                onPointerCancel={finishGalleryDrag}
+                onPointerLeave={finishGalleryDrag}
+                className="relative flex aspect-square w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden lg:aspect-[4/3]"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none", touchAction: "pan-y" }}
+              >
+                {galleryImages.map((image, index) => (
+                  <div key={`${image}-${index}`} className="relative min-w-full snap-center">
+                    <Image
+                      src={image}
+                      alt={item.name || "Produto"}
+                      fill
+                      priority={index === 0}
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      draggable={false}
+                      className="select-none object-cover object-center"
+                    />
+                  </div>
+                ))}
+                {galleryImages.length === 0 && (
+                  <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-(--logo2)/40">
+                    Sem imagens
+                  </div>
+                )}
+              </div>
+
               {hasDiscount && (
-                <div className="absolute left-4 top-4 rounded-full bg-black/80 px-3 py-1 text-sm font-bold tracking-wide text-white lg:text-base">
+                <div className="pointer-events-none absolute left-4 top-4 z-20 rounded-full bg-black/80 px-3 py-1 text-sm font-bold tracking-wide text-white lg:text-base">
                   {item.discountPercent}% OFF
+                </div>
+              )}
+
+              {galleryImages.length > 1 && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex items-center justify-center px-4">
+                  <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-black/20 px-3 py-2 backdrop-blur-md">
+                    {galleryImages.map((image, index) => (
+                      <button
+                        key={`${image}-${index}`}
+                        type="button"
+                        onClick={() => scrollToGalleryImage(index)}
+                        className={`h-2.5 rounded-full transition-all ${
+                          activeImageIndex === index
+                            ? "w-8 bg-white"
+                            : "w-2.5 bg-white/60 hover:bg-white"
+                        }`}
+                        aria-label={`Ver imagem ${index + 1}`}
+                        aria-current={activeImageIndex === index}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

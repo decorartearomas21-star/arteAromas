@@ -74,7 +74,7 @@ export default function ProductCard({ product, className = "" }) {
           alt={product.name || "Produto"}
           width={500}
           height={500}
-          priority
+          loading="lazy"
           className="h-full w-full object-cover object-center"
         />
         {discountPercent > 0 && (

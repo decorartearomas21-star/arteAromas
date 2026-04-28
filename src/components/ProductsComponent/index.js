@@ -5,8 +5,10 @@ import Image from "next/image";
 import { saveProductItem, saveProductsList } from "@/app/actions/products";
 import { currency } from "@/utils/currency";
 import {
+  ensureEditableProductImages,
   createEmptyProductComment,
   hasProductCommentContent,
+  MAX_PRODUCT_IMAGES,
   prepareProductsForEditor,
   prepareProductsForStorage,
 } from "@/utils/product";
@@ -30,6 +32,13 @@ const ensureTrailingComment = (comments) => {
   return safeComments;
 };
 
+const getProductImageTabLabel = (slotIndex) => (slotIndex === 0 ? "1" : `${slotIndex + 1}`);
+
+const getProductImageSlots = (product) => {
+  const extraImages = ensureEditableProductImages(product?.images);
+  return [String(product?.image || "").trim(), ...extraImages].slice(0, MAX_PRODUCT_IMAGES);
+};
+
 const hasMeaningfulProductContent = (product) => {
   if (!product || typeof product !== "object") return false;
 
@@ -43,6 +52,7 @@ const hasMeaningfulProductContent = (product) => {
       String(sanitized.linha || "").trim() ||
       String(sanitized.discount || "").trim() ||
       String(sanitized.image || "").trim() ||
+      (Array.isArray(sanitized.images) && sanitized.images.some((image) => String(image || "").trim())) ||
       Number(sanitized.price || 0) > 0 ||
       Number(sanitized.rating || 10) !== 10 ||
       sanitized.isActive === false ||
@@ -55,6 +65,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
   const [savingProductId, setSavingProductId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingTab, setEditingTab] = useState("product");
+  const [editingImageTab, setEditingImageTab] = useState(0);
   const [categoryDropdownProductId, setCategoryDropdownProductId] = useState(null);
   const [linhaDropdownProductId, setLinhaDropdownProductId] = useState(null);
 
@@ -117,6 +128,32 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     setProducts(newProducts);
   };
 
+  const handleImageChange = (index, slotIndex, value) => {
+    setProducts((currentProducts) => {
+      const newProducts = [...currentProducts];
+      const product = newProducts[index];
+      if (!product) return currentProducts;
+
+      if (slotIndex === 0) {
+        newProducts[index] = {
+          ...product,
+          image: value,
+        };
+        return newProducts;
+      }
+
+      const images = Array.isArray(product.images) ? [...product.images] : [];
+      images[slotIndex - 1] = value;
+
+      newProducts[index] = {
+        ...product,
+        images: ensureEditableProductImages(images),
+      };
+
+      return newProducts;
+    });
+  };
+
   const handleImageBlur = (index) => {
     setProducts((currentProducts) => {
       const newProducts = [...currentProducts];
@@ -164,6 +201,7 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
         discount: "",
         image: "",
         imagePreview: null,
+        images: [""],
         rating: 10,
         interactions: 0,
         isActive: true,
@@ -175,11 +213,13 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
     ]);
     setEditingId(newId);
     setEditingTab("product");
+    setEditingImageTab(0);
   };
 
   const openEditor = (productId) => {
     setEditingId(productId);
     setEditingTab("product");
+    setEditingImageTab(0);
   };
 
   const removeProduct = async (index) => {
@@ -401,24 +441,101 @@ const ProductsComponent = ({ initialData, isLoading, onSaveSuccess }) => {
               {editingTab === "product" && (
                 <div className="flex flex-col lg:flex-row gap-8">
                   {/* Coluna de Mídia */}
-                  <div className="w-full lg:w-56 space-y-3">
-                    <div className="relative aspect-square w-full rounded-2xl overflow-hidden border-2 border-gray-50 bg-gray-50">
-                      {productPreviewSrc ? (
-                        <Image src={productPreviewSrc} alt={product.name} fill className="object-cover" />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-[10px] text-gray-300 font-bold">SEM FOTO</div>
-                      )}
-                    </div>
+                  <div className="w-full lg:w-[230px] lg:shrink-0 space-y-2 lg:self-start">
+                    {(() => {
+                      const productImageSlots = getProductImageSlots(product);
+                      const activeImageTab = Math.min(
+                        editingImageTab,
+                        Math.max(productImageSlots.length - 1, 0),
+                      );
+                      const activeImageValue = productImageSlots[activeImageTab] || "";
+                      const activeImageSrc = sanitizeImageSrc(activeImageValue, null);
+                      const tabCount = productImageSlots.length;
+
+                      return (
+                        <>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {productImageSlots.map((_, slotIndex) => (
+                              <button
+                                key={`${product.id}-image-tab-${slotIndex}`}
+                                type="button"
+                                onClick={() => setEditingImageTab(slotIndex)}
+                                className={`min-w-10 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition-all ${
+                                  activeImageTab === slotIndex
+                                    ? "bg-blue-600 text-white shadow-md"
+                                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                }`}
+                                title={`Imagem ${getProductImageTabLabel(slotIndex)}`}
+                              >
+                                {getProductImageTabLabel(slotIndex)}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="relative mt-1 aspect-square w-full overflow-hidden rounded-2xl border-2 border-gray-50 bg-gray-50 shadow-sm">
+                            {activeImageSrc ? (
+                              <Image
+                                src={activeImageSrc}
+                                alt={`${product.name || "Produto"} - imagem ${activeImageTab + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-[10px] font-bold text-gray-300">
+                                SEM FOTO
+                              </div>
+                            )}
+
+                            {tabCount > 1 && (
+                              <div className="absolute inset-x-0 bottom-3 flex items-center justify-center">
+                                <div className="flex items-center gap-2 rounded-full bg-black/20 px-3 py-2 backdrop-blur-sm">
+                                  {productImageSlots.map((_, dotIndex) => (
+                                    <button
+                                      key={`${product.id}-image-dot-${dotIndex}`}
+                                      type="button"
+                                      onClick={() => setEditingImageTab(dotIndex)}
+                                      className={`h-2.5 rounded-full transition-all ${
+                                        activeImageTab === dotIndex
+                                          ? "w-8 bg-white"
+                                          : "w-2.5 bg-white/60 hover:bg-white"
+                                      }`}
+                                      aria-label={`Selecionar imagem ${dotIndex + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
                     <div>
-                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">URL da imagem</label>
+                      <label className="text-[10px] font-black text-gray-400 uppercase ml-1">
+                        URL da imagem {editingImageTab === 0 ? "principal" : editingImageTab + 1}
+                      </label>
                       <input
                         type="url"
-                        value={product.image || ""}
-                        onChange={(e) => handleChange(index, "image", e.target.value)}
-                        onBlur={() => handleImageBlur(index)}
+                        value={
+                          editingImageTab === 0
+                            ? product.image || ""
+                            : product.images?.[editingImageTab - 1] || ""
+                        }
+                        onChange={(e) =>
+                          handleImageChange(index, editingImageTab, e.target.value)
+                        }
+                        onBlur={() => {
+                          if (editingImageTab === 0) {
+                            handleImageBlur(index);
+                          }
+                        }}
                         className="w-full px-4 py-3 mt-1 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-blue-400 text-sm font-semibold shadow-inner"
                         placeholder="https://..."
                       />
+                      <p className="mt-2 text-[10px] font-medium text-gray-400">
+                        {editingImageTab === 0
+                          ? "Esta é a capa principal do produto."
+                          : "Esta imagem aparece no carrossel da PDP."}
+                      </p>
                     </div>
                   </div>
 
