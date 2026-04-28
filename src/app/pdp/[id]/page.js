@@ -1,6 +1,6 @@
 import PagePdp from "./pdp";
 import { getProductHighlightsData } from "@/app/actions/productHighlights";
-import { getProductById } from "@/app/actions/products";
+import { getProductById } from "@/lib/products";
 import { getSiteOrigin, sanitizeImageSrc } from "@/utils/url";
 
 const siteOrigin = getSiteOrigin();
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
           alt: productName,
         },
       ],
-      type: "product",
+      type: "website",
     },
     twitter: {
       card: "summary_large_image",

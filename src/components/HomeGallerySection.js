@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import ScrollFadeIn from "@/components/ScrollFadeIn";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
 const getVisiblePageItems = (totalPages, currentPage) => {
   if (totalPages <= 7) {
