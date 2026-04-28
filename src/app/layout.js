@@ -1,8 +1,12 @@
 import { ProductsProvider } from "@/context/ProductsContext";
 import { inter, notoSerif, roboto } from "@/app/fonts";
+import { getSiteOrigin } from "@/utils/url";
 import "./globals.css";
 
+const siteOrigin = getSiteOrigin();
+
 export const metadata = {
+  metadataBase: new URL(siteOrigin),
   title: "Decor Arte Aromas",
   description: "Velas e itens para relaxar & transformar ambientes.",
   manifest: "/manifest.json",

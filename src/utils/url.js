@@ -47,3 +47,15 @@ export function sanitizeImageSrc(value, fallback = FALLBACK_IMAGE) {
 export function isRenderableImageSrc(value) {
   return Boolean(sanitizeHttpUrl(value, null));
 }
+
+export function getSiteOrigin() {
+  const rawOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.VERCEL_URL ||
+    "https://decorartearomas.vercel.app";
+
+  return String(rawOrigin).startsWith("http://")
+    || String(rawOrigin).startsWith("https://")
+    ? String(rawOrigin)
+    : `https://${String(rawOrigin).replace(/^\/+/, "")}`;
+}
