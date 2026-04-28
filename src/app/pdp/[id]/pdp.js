@@ -42,6 +42,17 @@ const aplicarDesconto = (valorOriginal, percentualDesconto) => {
   return valorFinal;
 };
 
+const ShareIcon = ({ className = "" }) => (
+  <svg
+    viewBox="0 0 458.624 458.624"
+    fill="currentColor"
+    aria-hidden="true"
+    className={className}
+  >
+    <path d="M339.588,314.529c-14.215,0-27.456,4.133-38.621,11.239l-112.682-78.67c1.809-6.315,2.798-12.976,2.798-19.871c0-6.896-0.989-13.557-2.798-19.871l109.64-76.547c11.764,8.356,26.133,13.286,41.662,13.286c39.79,0,72.047-32.257,72.047-72.047C411.634,32.258,379.378,0,339.588,0c-39.79,0-72.047,32.257-72.047,72.047c0,5.255,0.578,10.373,1.646,15.308l-112.424,78.491c-10.974-6.759-23.892-10.666-37.727-10.666c-39.79,0-72.047,32.257-72.047,72.047s32.256,72.047,72.047,72.047c13.834,0,26.753-3.907,37.727-10.666l113.292,79.097c-1.629,6.017-2.514,12.34-2.514,18.872c0,39.79,32.257,72.047,72.047,72.047c39.79,0,72.047-32.257,72.047-72.047C411.635,346.787,379.378,314.529,339.588,314.529z" />
+  </svg>
+);
+
 const renderWhatsAppInline = (text, keyPrefix) => {
   const inlineRegex = /(\*[^*\n]+\*|_[^_\n]+_|~[^~\n]+~)/g;
   const nodes = [];
@@ -94,6 +105,7 @@ export default function PagePdp({ productId, productHighlights }) {
   const { getProductById: getCachedProductById, isHydrated, upsertProduct } = useProducts();
   const [fallbackItem, setFallbackItem] = useState(null);
   const [isFetchingFallback, setIsFetchingFallback] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
   const cachedItem = getCachedProductById(productId);
   const highlightItems = normalizeProductHighlightsPayload(productHighlights);
 
@@ -157,13 +169,44 @@ export default function PagePdp({ productId, productHighlights }) {
   const value = hasDiscount ? valorComDesconto : item.price;
   const savings = item.price - value;
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: item.name || "Decor Arte Aromas",
+      text: item.name ? `Veja este produto: ${item.name}` : "Veja este produto",
+      url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus("Link compartilhado");
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+      setShareStatus("Link copiado");
+    } catch {
+      const input = document.createElement("input");
+      input.value = url;
+      input.setAttribute("readonly", "");
+      input.style.position = "absolute";
+      input.style.left = "-9999px";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setShareStatus("Link copiado");
+    }
+  };
+
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center overflow-hidden bg-[radial-gradient(circle_at_top,#fff6e9,#f2e9d8_58%)] pb-16">
       <Header disable />
       <div className="pointer-events-none absolute -left-16 top-36 z-0 h-52 w-52 rounded-full bg-amber-200/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-52 z-0 h-64 w-64 rounded-full bg-rose-200/30 blur-3xl" />
 
-      <main id="lancamentos" className="relative z-10 w-full max-w-6xl px-4 pt-28 lg:px-8 lg:pt-32">
+      <main id="lancamentos" className="relative z-10 w-full max-w-6xl px-4 pt-24 lg:px-8 lg:pt-32">
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
           <div className="rounded-3xl border border-white/60 bg-white/70 p-3 shadow-xl backdrop-blur-sm lg:p-4">
             <div className="relative overflow-hidden rounded-2xl bg-[#efe4d2]">
@@ -225,6 +268,21 @@ export default function PagePdp({ productId, productHighlights }) {
                 />
                 Pedir agora
               </Link>
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-(--logo2)/15 bg-white/90 text-sm font-semibold text-(--logo2) transition-all hover:-translate-y-0.5 hover:border-(--logo2)/30 hover:shadow-md"
+                aria-label="Compartilhar produto"
+              >
+                <ShareIcon className="h-4 w-4" />
+                Compartilhar
+              </button>
+              {shareStatus && (
+                <p className="mt-2 text-center text-xs font-medium text-(--logo2)/60">
+                  {shareStatus}
+                </p>
+              )}
 
               <div className="mt-5 grid grid-cols-2 gap-2 text-xs font-semibold text-(--logo2)/80">
                 {(highlightItems.length ? highlightItems : DEFAULT_PRODUCT_HIGHLIGHTS).map((item) => (
